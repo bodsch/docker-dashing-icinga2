@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
+install:
+  - docker build --tag bodsch/docker-smashing .
+  - docker run --detach --name smashing bodsch/docker-smashing
+
+script:
+  - docker ps | grep -q smashing
+
