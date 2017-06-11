@@ -4,9 +4,9 @@ services:
   - docker
 
 install:
-  - docker build --tag bodsch/docker-smashing .
-  - docker run --detach --name smashing bodsch/docker-smashing
+  - docker build --tag bodsch/docker-smashing-icinga2 .
+  - docker run --detach --name smashing-icinga2 bodsch/docker-smashing-icinga2
 
 script:
-  - docker ps | grep -q smashing
+  - docker ps | grep -q smashing-icinga2
 
