@@ -1,22 +1,21 @@
-docker-dashing
+docker-smashing-icinga2
 ==============
 
-Minimal Image with Smashing (https://github.com/Smashing/smashing)
+Docker Container based on [docker-smashing](https://github.com/bodsch/docker-smashing) with Icinga2 Integration
 
-Includes an update of
- - jquery to v2.2.2
- - jquerui to v1.11.4
- - Font-Awesome to 4.7.0
+This Container use the [icinga2 gem](https://rubygems.org/gems/icinga2) and implements the
+dashboard from the official [Icinga2 Dashing](https://github.com/Icinga/dashing-icinga2)
+
 
 # Status
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/bodsch/docker-smashing.svg?branch=1706-02)][hub]
-[![Image Size](https://images.microbadger.com/badges/image/bodsch/docker-smashing.svg?branch=1706-02)][microbadger]
-[![Build Status](https://travis-ci.org/bodsch/docker-smashing.svg?branch=1706-02)][travis]
+[![Docker Pulls](https://img.shields.io/docker/pulls/bodsch/docker-smashing-icinga2.svg)][hub]
+[![Image Size](https://images.microbadger.com/badges/image/bodsch/docker-smashing-icinga2.svg)][microbadger]
+[![Build Status](https://travis-ci.org/bodsch/docker-smashing-icinga2.svg)][travis]
 
-[hub]: https://hub.docker.com/r/bodsch/docker-smashing/
-[microbadger]: https://microbadger.com/images/bodsch/docker-smashing
-[travis]: https://travis-ci.org/bodsch/docker-smashing
+[hub]: https://hub.docker.com/r/bodsch/docker-smashing-icinga2/
+[microbadger]: https://microbadger.com/images/bodsch/docker-smashing-icinga2
+[travis]: https://travis-ci.org/bodsch/docker-smashing-icinga2
 
 # Build
 
