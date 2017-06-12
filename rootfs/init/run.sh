@@ -32,7 +32,7 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
   then
 
     sed -i \
-      -e "s/run .*/\1run Rack::URLMap.new\('%PROXY_PATH%' => Sinatra::Application\)/g" \
+      -e "s/^run Sinatra::Application$/run Rack::URLMap.new\('%PROXY_PATH%' => Sinatra::Application\)/g" \
       ${CONFIG_FILE}
 
     app_coffee="${DASHING_PATH}/assets/javascripts/application.coffee"
