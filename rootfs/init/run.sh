@@ -2,21 +2,10 @@
 
 AUTH_TOKEN=${AUTH_TOKEN:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)}
 
-# ICINGA_HOST=${ICINGA2_HOST:-""}
-# ICINGA_PORT=${ICINGA2_PORT:-"5665"}
-# ICINGA_API_USER=${ICINGA_API_USER:-"dashing"}
-# ICINGA_API_PASSWORD=${ICINGA_API_PASSWORD:-"icinga"}
-# ICINGAWEB_HOST=${ICINGAWEB_HOST:-"icingaweb2"}
-# ICINGAWEB_PATH=${ICINGAWEB_PATH:-"/icingaweb2"}
 ICINGAWEB_URL=${ICINGAWEB_URL:-"http://localhost/icingaweb2"}
 PROXY_PATH=${PROXY_PATH:-""}
 
-
-#GRAPHITE_HOST=${GRAPHITE_HOST:-""}
-#GRAPHITE_PORT=${GRAPHITE_PORT:-8080}
-
 DASHBOARD=${DASHBOARD:-icinga2}
-
 
 DASHING_PATH="/opt/${DASHBOARD}"
 CONFIG_FILE="${DASHING_PATH}/config.ru"
@@ -31,7 +20,7 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
 
   icinga_dashboard="${DASHING_PATH}/dashboards/icinga2.erb"
 
-  if [ -f ${icinga_dashboard} ]
+  if [ -f "${icinga_dashboard}" ]
   then
     sed -i \
       -e 's|%ICINGAWEB_URL%|'${ICINGAWEB_URL}'|g' \
@@ -41,6 +30,29 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
 
   if [ ! -z ${PROXY_PATH} ]
   then
+
+    sed -i \
+      -e "s/run .*/\1run Rack::URLMap.new\('%PROXY_PATH%' => Sinatra::Application\)/g" \
+      ${CONFIG_FILE}
+
+    app_coffee="${DASHING_PATH}/assets/javascripts/application.coffee"
+
+    if [ $(grep -c "Batman.config.viewPrefix" ${app_coffee})  -eq 0 ]
+    then
+
+      ed ${app_coffee} << END
+9i
+Batman.config.viewPrefix = '%PROXY_PATH%/views'
+.
+w
+q
+END
+    fi
+
+    sed -i \
+      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+      ${app_coffee}
+
 
     layout="${DASHING_PATH}/dashboards/layout.erb"
 
@@ -54,7 +66,8 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
     sed -i \
       -e 's|%DASHBOARD%|'${DASHBOARD}'|g' \
       -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
-        ${CONFIG_FILE}
+      ${CONFIG_FILE}
+
   fi
 
   echo -e "\n"
