@@ -9,6 +9,7 @@ AUTH_TOKEN=${AUTH_TOKEN:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | 
 # ICINGAWEB_HOST=${ICINGAWEB_HOST:-"icingaweb2"}
 # ICINGAWEB_PATH=${ICINGAWEB_PATH:-"/icingaweb2"}
 ICINGAWEB_URL=${ICINGAWEB_URL:-"http://localhost/icingaweb2"}
+PROXY_PATH=${PROXY_PATH:-""}
 
 
 #GRAPHITE_HOST=${GRAPHITE_HOST:-""}
@@ -34,7 +35,26 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
   then
     sed -i \
       -e 's|%ICINGAWEB_URL%|'${ICINGAWEB_URL}'|g' \
+      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
       ${icinga_dashboard}
+  fi
+
+  if [ ! -z ${PROXY_PATH} ]
+  then
+
+    layout="${DASHING_PATH}/dashboards/layout.erb"
+
+    if [ -f ${layout} ]
+    then
+      sed -i \
+        -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+        ${layout}
+    fi
+
+    sed -i \
+      -e 's|%DASHBOARD%|'${DASHBOARD}'|g' \
+      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+        ${CONFIG_FILE}
   fi
 
   echo -e "\n"

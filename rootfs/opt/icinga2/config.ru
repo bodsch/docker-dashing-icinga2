@@ -3,13 +3,14 @@ require 'dashing'
 
 configure do
   set :auth_token, '%AUTH_TOKEN%'
-  set :default_dashboard, 'icinga2'
   set :raise_errors, true
 
   # we need this for running behind a proxy
   #
-#  set :default_dashboard, 'dashing/coremedia'
-#  set :assets_prefix,     '/dashing/assets'
+#  set :default_dashboard, 'icinga2'
+
+  set :default_dashboard, '%PROXY_PATH%/%DASHBOARD%'
+  set :assets_prefix,     '%PROXY_PATH%/assets'
 
   # allow iframes e.g. icingaweb2
   # https://github.com/Shopify/dashing/issues/199
