@@ -32,6 +32,7 @@ RUN \
     build-base \
     git \
     ruby-dev \
+    openssl-dev \
     supervisor && \
 
   cd /opt && \
@@ -46,7 +47,8 @@ RUN \
   apk del --purge \
     build-base \
     git \
-    ruby-dev && \
+    ruby-dev \
+    openssl-dev && \
   rm -rf \
     /tmp/* \
     /build \
