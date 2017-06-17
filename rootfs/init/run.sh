@@ -34,41 +34,40 @@ CONFIG_FILE="${DASHING_PATH}/config.ru"
     sed -i \
       -e "s/^run Sinatra::Application$/run Rack::URLMap.new\('%PROXY_PATH%' => Sinatra::Application\)/g" \
       ${CONFIG_FILE}
+  fi
 
-    app_coffee="${DASHING_PATH}/assets/javascripts/application.coffee"
+  app_coffee="${DASHING_PATH}/assets/javascripts/application.coffee"
 
-    if [ $(grep -c "Batman.config.viewPrefix" ${app_coffee})  -eq 0 ]
-    then
+  if [ $(grep -c "Batman.config.viewPrefix" ${app_coffee})  -eq 0 ]
+  then
 
-      ed ${app_coffee} << END
+    ed ${app_coffee} << END
 9i
 Batman.config.viewPrefix = '%PROXY_PATH%/views'
 .
 w
 q
 END
-    fi
-
-    sed -i \
-      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
-      ${app_coffee}
-
-
-    layout="${DASHING_PATH}/dashboards/layout.erb"
-
-    if [ -f ${layout} ]
-    then
-      sed -i \
-        -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
-        ${layout}
-    fi
-
-    sed -i \
-      -e 's|%DASHBOARD%|'${DASHBOARD}'|g' \
-      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
-      ${CONFIG_FILE}
-
   fi
+
+  sed -i \
+    -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+    ${app_coffee}
+
+
+  layout="${DASHING_PATH}/dashboards/layout.erb"
+
+  if [ -f ${layout} ]
+  then
+    sed -i \
+      -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+      ${layout}
+  fi
+
+  sed -i \
+    -e 's|%DASHBOARD%|'${DASHBOARD}'|g' \
+    -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \
+    ${CONFIG_FILE}
 
   echo -e "\n"
   echo " ==================================================================="

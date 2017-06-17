@@ -31,6 +31,7 @@ RUN \
   apk add --quiet --no-cache  \
     build-base \
     git \
+    openssl-dev \
     ruby-dev \
     supervisor && \
 

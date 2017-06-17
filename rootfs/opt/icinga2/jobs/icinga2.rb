@@ -89,6 +89,9 @@ SCHEDULER.every '15s', :first_in => 0 do |job|
    moreinfo: "Avg latency: #{cib.dig('status','avg_latency').round(2)}s",
    color: 'blue' })
 
+  send_event('icinga-severity', {
+   items: severity_stats,
+   color: 'blue' })
 
   # down, critical, warning, unknown
   send_event('icinga-host-down', {
