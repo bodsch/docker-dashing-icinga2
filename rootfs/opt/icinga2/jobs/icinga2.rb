@@ -1,37 +1,37 @@
 
 require 'icinga2'
 
-icingaHost         = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
-icingaApiPort      = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
-icingaApiUser      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
-icingaApiPass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
-icingaCluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
-icingaSatellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
+icinga_host         = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
+icinga_api_port     = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
+icinga_api_user     = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
+icinga_api_password = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
+icinga_cluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
+icinga_satellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
 
 
 # convert string to bool
-icingaCluster   = icingaCluster.to_s.eql?('true') ? true : false
+icinga_cluster   = icinga_cluster.to_s.eql?('true') ? true : false
 
 config = {
   :icinga => {
-    :host      => icingaHost,
+    :host      => icinga_host,
     :api       => {
-      :port => icingaApiPort,
-      :user => icingaApiUser,
-      :password => icingaApiPass
+      :port => icinga_api_port,
+      :user => icinga_api_user,
+      :password => icinga_api_password
     },
-    :cluster   => icingaCluster,
-    :satellite => icingaSatellite,
+    :cluster   => icinga_cluster,
+    :satellite => icinga_satellite,
   }
 }
 
 icinga = Icinga2::Client.new( config )
 
 
-SCHEDULER.every '15s', :first_in => 0 do |job|
+SCHEDULER.every '5s', :first_in => 0 do |job|
 
-  cib = icinga.CIBData()
-  app = icinga.applicationData()
+  cib = icinga.cib_data()
+  app = icinga.application_data()
 
   if( cib.is_a?(String) )
     cib = JSON.parse(cib)
@@ -39,21 +39,21 @@ SCHEDULER.every '15s', :first_in => 0 do |job|
 
   # meter widget
   # we'll update the patched meter widget with absolute values (set max dynamically)
-  hostProblems      = icinga.hostProblems()
-  maxHostObjects    = icinga.hostObjects()
+  host_problems      = icinga.host_problems()
+  max_host_objects    = icinga.host_objects()
 
-  serviceProblems   = icinga.serviceProblems()
-  maxServiceObjects = icinga.serviceObjects()
+  service_problems   = icinga.service_problems()
+  max_service_objects = icinga.service_objects()
 
-  if( maxHostObjects.is_a?(String) )
-    maxHostObjects = JSON.parse(maxHostObjects)
+  if( max_host_objects.is_a?(String) )
+    max_host_objects = JSON.parse(max_host_objects)
   end
-  if( maxServiceObjects.is_a?(String) )
-    maxServiceObjects = JSON.parse(maxServiceObjects)
+  if( max_service_objects.is_a?(String) )
+    max_service_objects = JSON.parse(max_service_objects)
   end
 
-  maxHostObjects    = maxHostObjects.dig('nodes').keys.count
-  maxServiceObjects = maxServiceObjects.dig('nodes').keys.count
+  max_host_objects    = max_host_objects.dig('nodes').keys.count
+  max_service_objects = max_service_objects.dig('nodes').keys.count
 
   # check stats
   check_stats = [
@@ -62,25 +62,25 @@ SCHEDULER.every '15s', :first_in => 0 do |job|
   ]
 
   # severity list
-  problemServ    = icinga.problemServices()
+  problem_services    = icinga.problem_services()
   severity_stats = []
 
-  problemServ.each do |name,state|
-    severity_stats.push({ 'label' => Icinga2::Converts.formatService(name) })
+  problem_services.each do |name,state|
+    severity_stats.push({ 'label' => Icinga2::Converts.format_service(name) })
   end
 
   puts "Severity: " + severity_stats.to_s
 
   send_event('icinga-host-meter', {
-   value: hostProblems,
-   max:   maxHostObjects,
-   moreinfo: "Total hosts: #{maxHostObjects}",
+   value: host_problems,
+   max:   max_host_objects,
+   moreinfo: "Total hosts: #{max_host_objects}",
    color: 'blue' })
 
   send_event('icinga-service-meter', {
-   value: serviceProblems,
-   max:   maxServiceObjects,
-   moreinfo: "Total services: #{maxServiceObjects}",
+   value: service_problems,
+   max:   max_service_objects,
+   moreinfo: "Total services: #{max_service_objects}",
    color: 'blue' })
 
 
