@@ -4,7 +4,7 @@ FROM bodsch/docker-smashing:latest
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-06-11" \
+  BUILD_DATE="2017-06-18" \
   DASHBOARD="icinga2"
 
 EXPOSE 3030
