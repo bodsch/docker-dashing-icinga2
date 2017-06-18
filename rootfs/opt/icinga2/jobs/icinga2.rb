@@ -33,32 +33,22 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
   cib = icinga.cib_data()
   app = icinga.application_data()
 
-  if( cib.is_a?(String) )
-    cib = JSON.parse(cib)
-  end
+  cib_status = cib.dig('status')
 
   # meter widget
   # we'll update the patched meter widget with absolute values (set max dynamically)
-  host_problems      = icinga.host_problems()
-  max_host_objects    = icinga.host_objects()
+  host_problems       = icinga.host_problems
+  max_host_objects    = icinga.host_objects
+  service_problems    = icinga.service_problems
+  max_service_objects = icinga.service_objects
 
-  service_problems   = icinga.service_problems()
-  max_service_objects = icinga.service_objects()
-
-  if( max_host_objects.is_a?(String) )
-    max_host_objects = JSON.parse(max_host_objects)
-  end
-  if( max_service_objects.is_a?(String) )
-    max_service_objects = JSON.parse(max_service_objects)
-  end
-
-  max_host_objects    = max_host_objects.dig('nodes').keys.count
-  max_service_objects = max_service_objects.dig('nodes').keys.count
+  max_host_objects    = max_host_objects.dig(:nodes).count
+  max_service_objects = max_service_objects.dig(:nodes).count
 
   # check stats
   check_stats = [
-    {'label' => 'Host (active)'    , 'value' => cib.dig('status','active_host_checks_1min')},
-    {'label' => 'Service (active)' , 'value' => cib.dig('status','active_service_checks_1min')},
+    {'label' => 'Host (active)'    , 'value' => cib_status.dig('active_host_checks_1min')},
+    {'label' => 'Service (active)' , 'value' => cib_status.dig('active_service_checks_1min')},
   ]
 
   # severity list
@@ -69,7 +59,7 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
     severity_stats.push({ 'label' => Icinga2::Converts.format_service(name) })
   end
 
-  puts "Severity: " + severity_stats.to_s
+#   puts "Severity: " + severity_stats.to_s
 
   send_event('icinga-host-meter', {
    value: host_problems,
@@ -86,7 +76,7 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
 
   send_event('icinga-checks', {
    items: check_stats,
-   moreinfo: "Avg latency: #{cib.dig('status','avg_latency').round(2)}s",
+   moreinfo: "Avg latency: #{cib_status.dig('avg_latency').round(2)}s",
    color: 'blue' })
 
   send_event('icinga-severity', {
@@ -95,37 +85,37 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
 
   # down, critical, warning, unknown
   send_event('icinga-host-down', {
-   value: cib.dig('status','num_hosts_down'),
+   value: cib_status.dig('num_hosts_down'),
    color: 'red' })
 
   send_event('icinga-service-critical', {
-   value: cib.dig('status','num_services_critical'),
+   value: cib_status.dig('num_services_critical'),
    color: 'red' })
 
   send_event('icinga-service-warning', {
-   value: cib.dig('status','num_services_warning'),
+   value: cib_status.dig('num_services_warning'),
    color: 'yellow' })
 
 
   send_event('icinga-service-unknown', {
-   value: cib.dig('status','num_services_unknown'),
+   value: cib_status.dig('num_services_unknown'),
    color: 'purple' })
 
   # ack, downtime
   send_event('icinga-service-ack', {
-   value: cib.dig('status','num_services_acknowledged'),
+   value: cib_status.dig('num_services_acknowledged'),
    color: 'blue' })
 
   send_event('icinga-host-ack', {
-   value: cib.dig('status','num_hosts_acknowledged'),
+   value: cib_status.dig('num_hosts_acknowledged'),
    color: 'blue' })
 
   send_event('icinga-service-downtime', {
-   value: cib.dig('status','num_services_in_downtime'),
+   value: cib_status.dig('num_services_in_downtime'),
    color: 'orange' })
 
   send_event('icinga-host-downtime', {
-   value: cib.dig('status','num_hosts_in_downtime'),
+   value: cib_status.dig('num_hosts_in_downtime'),
    color: 'orange' })
 
 end
