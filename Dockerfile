@@ -42,7 +42,7 @@ RUN \
   rm -f /opt/${DASHBOARD}/dashboards/* && \
   cd ${DASHBOARD} && \
   sed -i "/gem 'twitter'/d" Gemfile && \
-  echo "gem 'icinga2'" >> Gemfile && \
+  echo "gem 'icinga2', '~> 0.6'" >> Gemfile && \
   bundle install && \
 
   apk del --purge \
