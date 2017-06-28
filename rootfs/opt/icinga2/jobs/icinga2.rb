@@ -46,12 +46,18 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
   ]
 
   # severity list
-  problem_services    = icinga.problem_services(20) # numbers of services with problems (Hash)
-  severity_stats = []
+  problem_services, service_problems_severity = icinga.problem_services(15) # numbers of services with problems (Hash)
+  work_queue_stats = icinga.work_queue_statistics
 
+  severity_stats = []
   problem_services.each do |name,state|
     severity_stats.push( { label: Icinga2::Converts.format_service(name) } )
   end
+
+  work_queue_stats.each do |name, value|
+    icinga_stats.push( { label: name, value: '%0.2f' % value } )
+  end
+
 
   # handled stats
   handled_stats = [
