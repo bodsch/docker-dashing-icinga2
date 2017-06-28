@@ -34,82 +34,119 @@ SCHEDULER.every '5s', :first_in => 0 do |job|
 
   # meter widget
   # we'll update the patched meter widget with absolute values (set max dynamically)
-  host_problems       = icinga.host_problems
-  max_host_objects    = icinga.hosts_all
-  service_problems    = icinga.service_problems
-  max_service_objects = icinga.services_all
+  host_problems       = icinga.host_problems      # all hosts with problems (integer)
+  max_host_objects    = icinga.hosts_all          # all hosts (integer)
+  service_problems    = icinga.service_problems   # all services with problems (integer)
+  max_service_objects = icinga.services_all       # all services (integer)
 
   # check stats
-  check_stats = [
-    {'label' => 'Host (active)'    , 'value' => icinga.hosts_active_checks_1min},
-    {'label' => 'Service (active)' , 'value' => icinga.services_active_checks_1min},
+  icinga_stats = [
+    { label: 'Host checks/min'    , value: icinga.hosts_active_checks_1min },
+    { label: 'Service checks/min' , value: icinga.services_active_checks_1min },
   ]
 
   # severity list
-  problem_services    = icinga.problem_services()
+  problem_services    = icinga.problem_services(20) # numbers of services with problems (Hash)
   severity_stats = []
 
   problem_services.each do |name,state|
-    severity_stats.push({ 'label' => Icinga2::Converts.format_service(name) })
+    severity_stats.push( { label: Icinga2::Converts.format_service(name) } )
   end
 
-#   puts "Severity: " + severity_stats.to_s
+  # handled stats
+  handled_stats = [
+    { label: 'Acknowledgements', color: 'blue' },
+    { label: 'Hosts'           , value: icinga.hosts_acknowledged},
+    { label: 'Services'        , value: icinga.services_acknowledged},
+    { label: 'Downtimes'       , color: 'blue' },
+    { label: 'Hosts'           , value: icinga.hosts_in_downtime},
+    { label: 'Services'        , value: icinga.services_in_downtime},
+  ]
+
+
+  puts "Severity: #{severity_stats}"
+  puts "Icinga  : #{icinga_stats}"
+  puts "Handled : #{handled_stats}"
+
+  # ================================================================================================
+#   puts format('Severity: " + severity_stats.to_s
 
   send_event('icinga-host-meter', {
-   value: host_problems,
-   max:   max_host_objects,
-   moreinfo: "Total hosts: #{max_host_objects}",
-   color: 'blue' })
+    value: host_problems,
+    max:   max_host_objects,
+    moreinfo: "Total hosts: #{max_host_objects}",
+    color: 'blue'
+  })
 
   send_event('icinga-service-meter', {
-   value: service_problems,
-   max:   max_service_objects,
-   moreinfo: "Total services: #{max_service_objects}",
-   color: 'blue' })
+    value: service_problems,
+    max:   max_service_objects,
+    moreinfo: "Total services: #{max_service_objects}",
+    color: 'blue'
+  })
 
+  send_event('icinga-stats', {
+    title: "#{icinga.version} (#{icinga.revision})",
+    items: icinga_stats,
+    moreinfo: "Avg latency: #{icinga.avg_latency.round(2)}s",
+    color: 'blue'
+  })
 
-  send_event('icinga-checks', {
-   items: check_stats,
-   moreinfo: "Avg latency: #{icinga.avg_latency.round(2)}s",
-   color: 'blue' })
+  send_event('handled-stats', {
+    items: handled_stats,
+    color: 'blue'
+  })
 
   send_event('icinga-severity', {
-   items: severity_stats,
-   color: 'blue' })
+    items: severity_stats,
+    color: 'blue'
+  })
 
   # down, critical, warning, unknown
-  send_event('icinga-host-down', {
-   value: icinga.hosts_down_adjusted,
+  puts format('Host Down: %d', icinga.hosts_down)
+  send_event('icinga-host-problems-down', {
+    value: icinga.hosts_down,
+    moreinfo: "All Problems: #{icinga.hosts_down.to_s}",
+    color: 'red'
+  })
+
+  puts format('Service Critical: %d', icinga.services_critical)
+  send_event('icinga-service-problems-critical', {
+   value: icinga.services_critical.to_s,
+   moreinfo: "All Problems: " + icinga.services_critical.to_s,
    color: 'red' })
 
-  send_event('icinga-service-critical', {
-   value: icinga.services_critical_adjusted,
-   color: 'red' })
-
-  send_event('icinga-service-warning', {
-   value: icinga.services_warning_adjusted,
+  puts format('Service Warning: %d', icinga.services_warning)
+  send_event('icinga-service-problems-warning', {
+   value: icinga.services_warning.to_s,
+   moreinfo: "All Problems: " + icinga.services_warning.to_s,
    color: 'yellow' })
 
-
-  send_event('icinga-service-unknown', {
-   value: icinga.services_unknown_adjusted,
+  puts format('Service Unknown: %d', icinga.services_unknown )
+  send_event('icinga-service-problems-unknown', {
+   value: icinga.services_unknown.to_s,
+   moreinfo: "All Problems: " + icinga.services_unknown.to_s,
    color: 'purple' })
 
   # ack, downtime
+  puts format('Service Acknowledged: %d', icinga.services_acknowledged)
   send_event('icinga-service-ack', {
-   value: icinga.services_acknowledged,
+   value: icinga.services_acknowledged.to_s,
    color: 'blue' })
 
+  puts format('Host Acknowledged: %d', icinga.hosts_acknowledged)
   send_event('icinga-host-ack', {
-   value: icinga.hosts_acknowledged,
+   value: icinga.hosts_acknowledged.to_s,
    color: 'blue' })
 
+  puts format('Service In Downtime: %d', icinga.services_in_downtime)
   send_event('icinga-service-downtime', {
-   value: icinga.services_in_downtime,
+   value: icinga.services_in_downtime.to_s,
    color: 'orange' })
 
+  puts format('Host In Downtime: %d', icinga.hosts_in_downtime)
   send_event('icinga-host-downtime', {
-   value: icinga.hosts_in_downtime,
+   value: icinga.hosts_in_downtime.to_s,
    color: 'orange' })
 
 end

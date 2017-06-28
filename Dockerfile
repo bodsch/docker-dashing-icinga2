@@ -1,16 +1,16 @@
 
-FROM bodsch/docker-smashing:latest
+FROM bodsch/docker-smashing:1706-04.1
 
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-06-18" \
+  BUILD_DATE="2017-06-23" \
   DASHBOARD="icinga2"
 
 EXPOSE 3030
 
 LABEL \
-  version="1706-02" \
+  version="1706-04.1" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Smashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Smashing Icinga2 Docker Image" \
