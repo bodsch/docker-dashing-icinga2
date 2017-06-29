@@ -28,7 +28,7 @@ config = {
 icinga = Icinga2::Client.new( config )
 
 
-SCHEDULER.every '5s', :first_in => 0 do |job|
+SCHEDULER.every '60s', :first_in => 0 do |job|
 
   icinga.extract_data
 
