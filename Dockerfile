@@ -1,16 +1,16 @@
 
-FROM bodsch/docker-smashing:latest
+FROM bodsch/docker-smashing:1706-04.1
 
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-06-18" \
+  BUILD_DATE="2017-06-29" \
   DASHBOARD="icinga2"
 
 EXPOSE 3030
 
 LABEL \
-  version="1706-02" \
+  version="1706-04.1" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Smashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Smashing Icinga2 Docker Image" \
@@ -27,7 +27,6 @@ LABEL \
 RUN \
   apk update --quiet --no-cache && \
   apk upgrade --quiet --no-cache && \
-
   apk add --quiet --no-cache  \
     build-base \
     git \
@@ -35,16 +34,15 @@ RUN \
     ruby-dev \
     openssl-dev \
     supervisor && \
-
   cd /opt && \
   smashing new ${DASHBOARD} && \
   rm -f /opt/${DASHBOARD}/jobs/twitter* && \
   rm -f /opt/${DASHBOARD}/dashboards/* && \
   cd ${DASHBOARD} && \
+  bundle config local.icinga2 /build && \
   sed -i "/gem 'twitter'/d" Gemfile && \
-  echo "gem 'icinga2', '~> 0.6'" >> Gemfile && \
-  bundle install && \
-
+  echo "gem 'icinga2', '0.6.6'" >> Gemfile && \
+  bundle update && \
   apk del --purge \
     build-base \
     git \
@@ -63,3 +61,5 @@ WORKDIR /opt/${DASHBOARD}
 CMD [ "/init/run.sh" ]
 
 # ---------------------------------------------------------------------------------------
+
+#
