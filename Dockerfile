@@ -41,7 +41,7 @@ RUN \
   cd ${DASHBOARD} && \
   bundle config local.icinga2 /build && \
   sed -i "/gem 'twitter'/d" Gemfile && \
-  echo "gem 'icinga2', '0.6.6'" >> Gemfile && \
+  echo "gem 'icinga2', '~> 0.6.6'" >> Gemfile && \
   bundle update && \
   apk del --purge \
     build-base \
