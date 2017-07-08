@@ -25,9 +25,9 @@ LABEL \
 # ---------------------------------------------------------------------------------------
 
 RUN \
-  apk update --quiet --no-cache && \
-  apk upgrade --quiet --no-cache && \
-  apk add --quiet --no-cache  \
+  apk --no-cache update && \
+  apk --no-cache upgrade && \
+  apk --no-cache add \
     build-base \
     git \
     openssl-dev \
