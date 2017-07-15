@@ -1,34 +1,37 @@
 
 require 'icinga2'
 
-icinga_host         = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
-icinga_api_port     = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
-icinga_api_user     = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
-icinga_api_password = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
-icinga_cluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
-icinga_satellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
-
+icinga_host          = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
+icinga_api_port      = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
+icinga_api_user      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
+icinga_api_password  = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
+icinga_api_pki_path  = ENV.fetch( 'ICINGA_API_PKI_PATH'     , nil )
+icinga_api_node_name = ENV.fetch( 'ICINGA_API_NODE_NAME'    , nil )
+icinga_cluster       = ENV.fetch( 'ICINGA_CLUSTER'          , false )
+icinga_satellite     = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
 
 # convert string to bool
 icinga_cluster   = icinga_cluster.to_s.eql?('true') ? true : false
 
 config = {
-  :icinga => {
-    :host      => icinga_host,
-    :api       => {
-      :port => icinga_api_port,
-      :user => icinga_api_user,
-      :password => icinga_api_password
+  icinga: {
+    host: icinga_host,
+    api: {
+      port: icinga_api_port,
+      user: icinga_api_user,
+      password: icinga_api_password,
+      pki_path: icinga_api_pki_path,
+      node_name: icinga_api_node_name
     },
-    :cluster   => icinga_cluster,
-    :satellite => icinga_satellite,
+    cluster: icinga_cluster,
+    satellite: icinga_satellite,
   }
 }
 
 icinga = Icinga2::Client.new( config )
 
 
-SCHEDULER.every '60s', :first_in => 0 do |job|
+SCHEDULER.every '15s', :first_in => 10 do |job|
 
   icinga.extract_data
 
@@ -58,7 +61,6 @@ SCHEDULER.every '60s', :first_in => 0 do |job|
     icinga_stats.push( { label: name, value: '%0.2f' % value } )
   end
 
-
   # handled stats
   handled_stats = [
     { label: 'Acknowledgements', color: 'blue' },
@@ -69,10 +71,9 @@ SCHEDULER.every '60s', :first_in => 0 do |job|
     { label: 'Services'        , value: icinga.services_in_downtime},
   ]
 
-
-  puts "Severity: #{severity_stats}"
-  puts "Icinga  : #{icinga_stats}"
-  puts "Handled : #{handled_stats}"
+#  puts "Severity: #{severity_stats}"
+#  puts "Icinga  : #{icinga_stats}"
+#  puts "Handled : #{handled_stats}"
 
   # ================================================================================================
 #   puts format('Severity: " + severity_stats.to_s
@@ -108,51 +109,73 @@ SCHEDULER.every '60s', :first_in => 0 do |job|
     color: 'blue'
   })
 
+  host_color = if( icinga.hosts_down.to_i == 0 )
+    'blue'
+  else
+    'red'
+  end
+
+  service_color = if( icinga.services_critical.to_i == 0 )
+    'blue'
+  else
+    'red'
+  end
+
   # down, critical, warning, unknown
-  puts format('Host Down: %d', icinga.hosts_down)
+#  puts format('Host Down: %d', icinga.hosts_down)
   send_event('icinga-host-problems-down', {
+    title: 'Hosts down',
     value: icinga.hosts_down,
     moreinfo: "All Problems: #{icinga.hosts_down.to_s}",
-    color: 'red'
+    color: host_color
   })
 
-  puts format('Service Critical: %d', icinga.services_critical)
+#  puts format('Service Critical: %d', icinga.services_critical)
   send_event('icinga-service-problems-critical', {
-   value: icinga.services_critical.to_s,
-   moreinfo: "All Problems: " + icinga.services_critical.to_s,
-   color: 'red' })
+    title: 'Services critical',
+    value: icinga.services_critical.to_s,
+    moreinfo: "All Problems: " + icinga.services_critical.to_s,
+    color: service_color
+  })
 
-  puts format('Service Warning: %d', icinga.services_warning)
+#  puts format('Service Warning: %d', icinga.services_warning)
   send_event('icinga-service-problems-warning', {
-   value: icinga.services_warning.to_s,
-   moreinfo: "All Problems: " + icinga.services_warning.to_s,
-   color: 'yellow' })
+    title: 'Services warning',
+    value: icinga.services_warning.to_s,
+    moreinfo: "All Problems: " + icinga.services_warning.to_s,
+    color: 'yellow'
+  })
 
-  puts format('Service Unknown: %d', icinga.services_unknown )
+#  puts format('Service Unknown: %d', icinga.services_unknown )
   send_event('icinga-service-problems-unknown', {
-   value: icinga.services_unknown.to_s,
-   moreinfo: "All Problems: " + icinga.services_unknown.to_s,
-   color: 'purple' })
+    title: 'Services unknown',
+    value: icinga.services_unknown.to_s,
+    moreinfo: "All Problems: " + icinga.services_unknown.to_s,
+    color: 'purple' })
 
-  # ack, downtime
-  puts format('Service Acknowledged: %d', icinga.services_acknowledged)
-  send_event('icinga-service-ack', {
-   value: icinga.services_acknowledged.to_s,
-   color: 'blue' })
-
-  puts format('Host Acknowledged: %d', icinga.hosts_acknowledged)
-  send_event('icinga-host-ack', {
-   value: icinga.hosts_acknowledged.to_s,
-   color: 'blue' })
-
-  puts format('Service In Downtime: %d', icinga.services_in_downtime)
-  send_event('icinga-service-downtime', {
-   value: icinga.services_in_downtime.to_s,
-   color: 'orange' })
-
-  puts format('Host In Downtime: %d', icinga.hosts_in_downtime)
-  send_event('icinga-host-downtime', {
-   value: icinga.hosts_in_downtime.to_s,
-   color: 'orange' })
+#   # ack, downtime
+#   puts format('Service Acknowledged: %d', icinga.services_acknowledged)
+#   send_event('icinga-service-ack', {
+#     value: icinga.services_acknowledged.to_s,
+#     color: 'blue'
+#   })
+#
+#   puts format('Host Acknowledged: %d', icinga.hosts_acknowledged)
+#   send_event('icinga-host-ack', {
+#     value: icinga.hosts_acknowledged.to_s,
+#     color: 'blue'
+#   })
+#
+#   puts format('Service In Downtime: %d', icinga.services_in_downtime)
+#   send_event('icinga-service-downtime', {
+#     value: icinga.services_in_downtime.to_s,
+#     color: 'orange'
+#   })
+#
+#   puts format('Host In Downtime: %d', icinga.hosts_in_downtime)
+#   send_event('icinga-host-downtime', {
+#     value: icinga.hosts_in_downtime.to_s,
+#     color: 'orange'
+#   })
 
 end
