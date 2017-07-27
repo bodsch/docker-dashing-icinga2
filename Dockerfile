@@ -30,6 +30,7 @@ RUN \
   apk --no-cache add \
     build-base \
     git \
+    jq \
     openssl-dev \
     ruby-dev \
     openssl-dev \
