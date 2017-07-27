@@ -4,13 +4,13 @@ FROM bodsch/docker-smashing:1707-27.1
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-07-08" \
+  BUILD_DATE="2017-07-27" \
   DASHBOARD="icinga2"
 
 EXPOSE 3030
 
 LABEL \
-  version="1707-27.1" \
+  version="1707-30" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Smashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Smashing Icinga2 Docker Image" \
