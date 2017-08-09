@@ -9,10 +9,11 @@
   <title><%= yield_content(:title) %></title>
   <!-- The javascript and css are managed by sprockets. The files can be found in the /assets folder-->
   <!-- change path when dashing runs behind a proxy: -->
-  <script type="text/javascript" src="%PROXY_PATH%/assets/application.js"></script>
+
   <link rel="stylesheet" href="%PROXY_PATH%/assets/application.css">
   <link rel="stylesheet" href="%PROXY_PATH%/assets/custom.css">
-  <link href='//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+<!--  <link rel="stylesheet" href="%PROXY_PATH%/assets/fonts.css"> -->
+<!--  <link href='//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'> -->
   <link rel="icon" href="%PROXY_PATH%/assets/favicon.ico">
 
 <!--
@@ -25,8 +26,8 @@
 </head>
   <body>
     <div id="container">
-      <div id="banner" style="background-color: #0095bf; padding: 10px">
-        <img src="/assets/logo_icinga-inv.png" style="height: 50px"></img>
+      <div id="banner">
+        <img src="%PROXY_PATH%/assets/logo_icinga-inv.png"></img>
       <div>
       <%= yield %>
     </div>
@@ -39,4 +40,5 @@
       <a href="#saving-instructions" id="save-gridster">Save this layout</a>
     <% end %>
   </body>
+  <script type="text/javascript" src="%PROXY_PATH%/assets/application.js"></script>
 </html>

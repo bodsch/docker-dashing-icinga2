@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Sass declarations
 // ----------------------------------------------------------------------------
-$background-color:  #0095bf;
+$background-color:  #165aa8;
 $value-color:       #fff;
 
 $title-color:       rgba(255, 255, 255, 0.7);
@@ -13,8 +13,18 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
 // ----------------------------------------------------------------------------
 .widget-list {
 
-  background-color: $background-color;
+/*   background-color: $background-color; */
 
+  .title {
+    color: $title-color;
+    position: absolute;
+    top: 0;
+    left: 2.2em;
+    font-size: 1.4em;
+    text-align: center;
+  }
+
+/*
   .title {
     color: $title-color;
     position: absolute;
@@ -24,7 +34,7 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
     font-size: 25px;
     text-align: center;
   }
-
+*/
   ol, ul {
     margin: 0 5px;
     text-align: left;
@@ -57,10 +67,6 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
     font-weight: 500;
     font-size: 15px;
     color: $value-color;
-  }
-
-  .updated-at {
-    color: rgba(0, 0, 0, 0.3);
   }
 
   .more-info {

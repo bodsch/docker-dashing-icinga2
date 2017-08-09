@@ -93,7 +93,7 @@ SCHEDULER.every '15s', :first_in => 10 do |job|
   })
 
   send_event('icinga-stats', {
-    title: "#{icinga.version} (#{icinga.revision})",
+    title: "version: #{icinga.version}",
     items: icinga_stats,
     moreinfo: "Avg latency: #{icinga.avg_latency.round(2)}s",
     color: 'blue'
@@ -109,23 +109,40 @@ SCHEDULER.every '15s', :first_in => 10 do |job|
     color: 'blue'
   })
 
-  host_color = if( icinga.hosts_down.to_i == 0 )
+  puts "service handled critical: " + icinga.services_handled_critical_problems.to_s
+  puts "service handled warnings: " + icinga.services_handled_warning_problems.to_s
+  puts "service handled unknowns: " + icinga.services_handled_unknown_problems.to_s
+
+
+  host_color = if( icinga.hosts_problems_down.to_i == 0 )
     'blue'
   else
     'red'
   end
 
-  service_color = if( icinga.services_critical.to_i == 0 )
+  service_critical_color = if( icinga.services_handled_critical_problems.to_i == 0 )
     'blue'
   else
     'red'
+  end
+
+  service_warning_color = if( icinga.services_handled_warning_problems.to_i == 0 )
+    'blue'
+  else
+    'yellow'
+  end
+
+  service_unknown_color = if( icinga.services_handled_unknown_problems.to_i == 0 )
+    'blue'
+  else
+    'purple'
   end
 
   # down, critical, warning, unknown
 #  puts format('Host Down: %d', icinga.hosts_down)
   send_event('icinga-host-problems-down', {
     title: 'Hosts down',
-    value: icinga.hosts_down,
+    value: icinga.hosts_problems_down,
     moreinfo: "All Problems: #{icinga.hosts_down.to_s}",
     color: host_color
   })
@@ -133,25 +150,26 @@ SCHEDULER.every '15s', :first_in => 10 do |job|
 #  puts format('Service Critical: %d', icinga.services_critical)
   send_event('icinga-service-problems-critical', {
     title: 'Services critical',
-    value: icinga.services_critical.to_s,
+    value: icinga.services_handled_critical_problems.to_s,
     moreinfo: "All Problems: " + icinga.services_critical.to_s,
-    color: service_color
+    color: service_critical_color
   })
 
 #  puts format('Service Warning: %d', icinga.services_warning)
   send_event('icinga-service-problems-warning', {
     title: 'Services warning',
-    value: icinga.services_warning.to_s,
+    value: icinga.services_handled_warning_problems.to_s,
     moreinfo: "All Problems: " + icinga.services_warning.to_s,
-    color: 'yellow'
+    color: service_warning_color
   })
 
 #  puts format('Service Unknown: %d', icinga.services_unknown )
   send_event('icinga-service-problems-unknown', {
     title: 'Services unknown',
-    value: icinga.services_unknown.to_s,
+    value: icinga.services_handled_unknown_problems.to_s,
     moreinfo: "All Problems: " + icinga.services_unknown.to_s,
-    color: 'purple' })
+    color: service_unknown_color
+  })
 
 #   # ack, downtime
 #   puts format('Service Acknowledged: %d', icinga.services_acknowledged)
