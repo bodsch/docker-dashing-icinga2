@@ -2,7 +2,7 @@
 
 
 database:
-  image: bodsch/docker-mysql:1707-27.1
+  image: bodsch/docker-mysql:1707-30.1
   container_name: database
   hostname: database
   ports:
@@ -17,16 +17,15 @@ database:
 # the Icinga2 Master
 # includes a certificate service to create and provide a icinga certificate
 icinga2-master:
-  image: bodsch/docker-icinga2:1707-30.1
+  image: bodsch/docker-icinga2:1708-33.1
   container_name: icinga2-master
   hostname: icinga2-master.matrix.lan
   ports:
     - 5665:5665
     - 4567:4567
   environment:
-    - DEBUG=1
     - ICINGA_API_USERS=root:icinga,dashing:dashing,cert:foo-bar
-    - MYSQL_HOST=
+    - MYSQL_HOST=database
     - MYSQL_ROOT_USER=root
     - MYSQL_ROOT_PASS=vYUQ14SGVrJRi69PsujC
     - ICINGA_MASTER=icinga2-master.matrix.lan
@@ -41,7 +40,9 @@ icinga2-master:
     - ICINGA_CERT_SERVICE_PATH=/
     - CARBON_HOST=
     - CARBON_PORT=2003
+    - DEMO_DATA=true
   volumes:
+    - /etc/localtime:/etc/localtime:ro
     - /tmp/docker-data/icinga2-master:/srv
   links:
     - database:database
@@ -55,7 +56,7 @@ smashing-icinga2:
   ports:
     - 3030:3030
   environment:
-    - DEBUG=1
+    - DEBUG=0
     - ICINGA_HOST=icinga2-master.matrix.lan
     - ICINGA_API_USER=root
     - ICINGA_API_PASSWORD=icinga
@@ -69,6 +70,7 @@ smashing-icinga2:
     - ICINGA_CERT_SERVICE_PORT=4567
     - ICINGA_CERT_SERVICE_PATH=/
   volumes:
+    - /etc/localtime:/etc/localtime:ro
     - /tmp/docker-data/smashing-icinga2:/srv
   links:
     - icinga2-master:icinga2-master.matrix.lan
