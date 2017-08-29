@@ -1,0 +1,26 @@
+<h1 class="title" data-bind="title"></h1>
+
+<ul class="list-nostyle">
+  <li data-foreach-item="items">
+    <div data-bind-class="item.color">
+      <span class="label" data-bind="item.label"></span>
+      <span class="value">
+        <span class="v" data-bind="item.value"></span>
+        <span class="h" data-bind="item.handled"></span>
+      </span>
+    </div>
+  </li>
+</ul>
+
+<p class="updated-at" data-bind="updatedAtMessage"></p>
+
+<!--
+<ul class="nav tab-nav nav-level-2">
+  <li class="nav-item no-icon">
+    <a class="badge state-critical" title="List 13 services which are currently in state CRITICAL" href="/icingaweb2/monitoring/list/services?service_state=2&amp;service_handled=0">13</a>
+  </li>
+  <li class="nav-item no-icon">
+    <a class="badge state-critical handled" title="List 13 handled services which are currently in state CRITICAL" href="/icingaweb2/monitoring/list/services?service_state=2&amp;service_handled=1">13</a>
+  </li>
+</ul>
+-->

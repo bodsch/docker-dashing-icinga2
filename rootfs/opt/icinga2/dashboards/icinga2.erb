@@ -1,8 +1,8 @@
 <script type='text/javascript'>
 $(function() {
   // These settings override the defaults set in application.coffee. You can do this on a per dashboard basis.
-  Dashing.widget_base_dimensions = [300,300]
-  Dashing.numColumns = 5
+  Dashing.widget_base_dimensions = [250,250]
+  Dashing.numColumns = 6
 });
 </script>
 
@@ -29,6 +29,7 @@ $(function() {
     </li>
 
     <!-- Down, Critical, Warning, Unknown -->
+
     <li data-row="2" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="icinga-host-problems-down" data-view="Simplemon" data-title="Unhandled Hosts"></div>
     </li>
@@ -42,10 +43,21 @@ $(function() {
       <div data-id="icinga-service-problems-unknown" data-view="Simplemon" data-title="Unhandled Services"></div>
     </li>
 
+    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="icinga-hosts" data-view="Icinga2" data-title="Icinga2 Hosts"></div>
+    </li>
+
+    <li data-row="3" data-col="2" data-sizex="1" data-sizey="1">
+      <div data-id="icinga-services" data-view="Icinga2" data-title="Icinga2 Services"></div>
+    </li>
+
+
     <!-- Takes two rows for all service problems by severity -->
+
     <li data-row="2" data-col="5" data-sizex="1" data-sizey="2">
       <div data-id="icinga-severity" data-view="List" data-unordered="true" data-title="Problems" style="background-color: #0095bf;"></div>
     </li>
+
 
 
     <!-- Icinga Web 2 iFrame -->

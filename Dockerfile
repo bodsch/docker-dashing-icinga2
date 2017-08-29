@@ -4,13 +4,14 @@ FROM bodsch/docker-smashing:1707-27.1
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-07-27" \
-  DASHBOARD="icinga2"
+  BUILD_DATE="2017-08-24" \
+  DASHBOARD="icinga2" \
+  ICINGA2_GEM_VERSION="0.8"
 
 EXPOSE 3030
 
 LABEL \
-  version="1707-30" \
+  version="1708-34" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Smashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Smashing Icinga2 Docker Image" \
@@ -23,6 +24,8 @@ LABEL \
   com.microscaling.license="GNU General Public License v3.0"
 
 # ---------------------------------------------------------------------------------------
+
+COPY build /build
 
 RUN \
   apk --no-cache update && \
@@ -42,7 +45,15 @@ RUN \
   cd ${DASHBOARD} && \
   bundle config local.icinga2 /build && \
   sed -i "/gem 'twitter'/d" Gemfile && \
-  echo "gem 'icinga2', '~> 0.7'" >> Gemfile && \
+  #
+  cd /opt/${DASHBOARD} && \
+  count=$(ls -1 /build/*.gem 2> /dev/null | tail -n1) && \
+  if [ ! -z ${count} ] ; then \
+    gem install --no-rdoc --no-ri ${count} ; \
+  else \
+    echo "gem 'icinga2', '~> ${ICINGA2_GEM_VERSION}'" >> Gemfile ; \
+  fi && \
+  #
   bundle update && \
   apk del --purge \
     build-base \
@@ -62,5 +73,3 @@ WORKDIR /opt/${DASHBOARD}
 CMD [ "/init/run.sh" ]
 
 # ---------------------------------------------------------------------------------------
-
-#
