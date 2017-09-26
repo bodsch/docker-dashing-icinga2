@@ -1,5 +1,5 @@
 
-FROM bodsch/docker-smashing:1709.1
+FROM bodsch/docker-dashing:1709.1
 
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
