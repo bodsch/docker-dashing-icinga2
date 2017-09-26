@@ -4,8 +4,8 @@ include env_make
 NS       = bodsch
 VERSION ?= latest
 
-REPO     = docker-smashing-icinga2
-NAME     = smashing-icinga2
+REPO     = docker-dashing-icinga2
+NAME     = dashing-icinga2
 INSTANCE = default
 
 .PHONY: build push shell run start stop rm release

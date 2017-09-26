@@ -49,10 +49,10 @@ icinga2-master:
 
 # the first icinga2 satellite
 # ask the master above for an certificate
-smashing-icinga2:
+dashing-icinga2:
   build: .
-  container_name: smashing-icinga2
-  hostname: smashing-icinga2.matrix.lan
+  container_name: dashing-icinga2
+  hostname: dashing-icinga2.matrix.lan
   ports:
     - 3030:3030
   environment:
@@ -71,6 +71,6 @@ smashing-icinga2:
     - ICINGA_CERT_SERVICE_PATH=/
   volumes:
     - /etc/localtime:/etc/localtime:ro
-    - /tmp/docker-data/smashing-icinga2:/srv
+    - /tmp/docker-data/dashing-icinga2:/srv
   links:
     - icinga2-master:icinga2-master.matrix.lan
