@@ -1,6 +1,4 @@
 
-
-
 # wait for the Certificate Service
 #
 icinga_cert_service() {
@@ -147,6 +145,7 @@ icinga_cert_service() {
   fi
 }
 
+rm -rf ${WORK_DIR}/pki
 
 icinga_cert_service
 
