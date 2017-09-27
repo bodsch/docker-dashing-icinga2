@@ -1,4 +1,8 @@
 
+
+ICINGA_API_PORT=${ICINGA_API_PORT:-5665}
+ICINGA_CERT_SERVICE=${ICINGA_CERT_SERVICE:-false}
+
 # wait for the Certificate Service
 #
 icinga_cert_service() {
@@ -142,12 +146,38 @@ icinga_cert_service() {
       fi
 
     fi
+
+    export ICINGA_API_PKI_PATH=${WORK_DIR}/pki/${HOSTNAME}
+    export ICINGA_API_NODE_NAME=${HOSTNAME}
   fi
 }
 
-rm -rf ${WORK_DIR}/pki
+validate_cert() {
 
+  if [ -d ${WORK_DIR}/pki/${HOSTNAME} ]
+  then
+    cd ${WORK_DIR}/pki/${HOSTNAME}
+
+    if [ ! -f ${HOSTNAME}.pem ]
+    then
+      cat ${HOSTNAME}.crt ${HOSTNAME}.key >> ${HOSTNAME}.pem
+    fi
+
+    curl \
+      --silent \
+      --insecure \
+      --user ${ICINGA_CERT_SERVICE_API_USER}:${ICINGA_CERT_SERVICE_API_PASSWORD} \
+      --capath . \
+      --cert ./dashing.pem \
+      --cacert ./ca.crt \
+      https://${ICINGA_HOST}:${ICINGA_API_PORT}/v1/status/CIB
+
+    if [[ $? -gt 0 ]]
+    then
+      rm -rf ${WORK_DIR}/pki
+    fi
+  fi
+}
+
+validate_cert
 icinga_cert_service
-
-export ICINGA_API_PKI_PATH=${WORK_DIR}/pki/${HOSTNAME}
-export ICINGA_API_NODE_NAME=${HOSTNAME}
