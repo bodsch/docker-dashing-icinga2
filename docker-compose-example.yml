@@ -17,7 +17,7 @@ database:
 # the Icinga2 Master
 # includes a certificate service to create and provide a icinga certificate
 icinga2-master:
-  image: bodsch/docker-icinga2:1711.2
+  image: bodsch/docker-icinga2:2.7.1-r4
   container_name: icinga2-master
   hostname: icinga2-master.matrix.lan
   ports:
