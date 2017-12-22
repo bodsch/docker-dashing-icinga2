@@ -1,87 +1,50 @@
 
-
 ICINGA_API_PORT=${ICINGA_API_PORT:-5665}
 ICINGA_CERT_SERVICE=${ICINGA_CERT_SERVICE:-false}
 
-# wait for the Certificate Service
+# get a new icinga certificate from our icinga-master
 #
-icinga_cert_service() {
+#
+get_certificate() {
 
-  # the CERT-Service API use an Basic-Auth as first Authentication *AND*
-  # use an own API Userr
+  validate_local_ca
+
+  if [ -f ${WORK_DIR}/pki/${HOSTNAME}.key ]
+  then
+    return
+  fi
+
   if [ ${ICINGA_CERT_SERVICE} ]
   then
+    echo ""
+    echo " [i] we ask our cert-service for a certificate .."
 
-    # use the new Cert Service to create and get a valide certificat for distributed icinga services
-    if (
-      [ ! -z ${ICINGA_CERT_SERVICE_BA_USER} ] && [ ! -z ${ICINGA_CERT_SERVICE_BA_PASSWORD} ] &&
-      [ ! -z ${ICINGA_CERT_SERVICE_API_USER} ] && [ ! -z ${ICINGA_CERT_SERVICE_API_PASSWORD} ]
-    )
+    # generate a certificate request
+    #
+    code=$(curl \
+      --user ${ICINGA_CERT_SERVICE_BA_USER}:${ICINGA_CERT_SERVICE_BA_PASSWORD} \
+      --silent \
+      --request GET \
+      --header "X-API-USER: ${ICINGA_CERT_SERVICE_API_USER}" \
+      --header "X-API-KEY: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
+      --write-out "%{http_code}\n" \
+      --output /tmp/request_${HOSTNAME}.json \
+      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/request/${HOSTNAME})
+
+    if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
     then
 
-      RETRY=30
-      # wait for the running cert-service
-      #
-      until [ ${RETRY} -le 0 ]
-      do
-        nc -z ${ICINGA_CERT_SERVICE_SERVER} ${ICINGA_CERT_SERVICE_PORT} < /dev/null > /dev/null
+      echo " [i] certifiacte request was successful"
+      echo " [i] download and install the certificate"
 
-        [ $? -eq 0 ] && break
+      master_name=$(jq --raw-output .master_name /tmp/request_${HOSTNAME}.json)
+      checksum=$(jq --raw-output .checksum /tmp/request_${HOSTNAME}.json)
 
-        echo " [i] wait for the cert-service on '${ICINGA_CERT_SERVICE_SERVER}'"
+#      rm -f /tmp/request_${HOSTNAME}.json
 
-        sleep 10s
-        RETRY=$(expr ${RETRY} - 1)
-      done
+      mkdir -p ${WORK_DIR}/pki/${HOSTNAME}
 
-      if [ $RETRY -le 0 ]
-      then
-        echo " [E] Could not connect to the Certificate-Service '${ICINGA_CERT_SERVICE_SERVER}'"
-        exit 1
-      fi
-
-      # okay, the web service is available
-      # but, we have a problem, when he runs behind a proxy ...
-      # eg.: https://monitoring-proxy.tld/cert-cert-service
-      #
-
-      RETRY=30
-      # wait for the cert-service health check behind a proxy
-      #
-      until [ ${RETRY} -le 0 ]
-      do
-
-        health=$(curl \
-          --silent \
-          --request GET \
-          --write-out "%{http_code}\n" \
-          --request GET \
-          http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/health-check)
-
-        if ( [ $? -eq 0 ] && [ "${health}" == "healthy200" ] )
-        then
-          break
-        fi
-
-        health=
-
-        echo " [i] wait for the health check for the cert-service on '${ICINGA_CERT_SERVICE_SERVER}'"
-        sleep 10s
-        RETRY=$(expr ${RETRY} - 1)
-      done
-
-      if [ $RETRY -le 0 ]
-      then
-        echo " [E] Could not a Health Check from the Certificate-Service '${ICINGA_CERT_SERVICE_SERVER}'"
-        exit 1
-      fi
-
-      sleep 5s
-
-      echo ""
-      echo " [i] we ask our cert-service for a certificate .."
-
-      # generate a certificate request
+      # get our created cert
       #
       code=$(curl \
         --user ${ICINGA_CERT_SERVICE_BA_USER}:${ICINGA_CERT_SERVICE_BA_PASSWORD} \
@@ -89,36 +52,15 @@ icinga_cert_service() {
         --request GET \
         --header "X-API-USER: ${ICINGA_CERT_SERVICE_API_USER}" \
         --header "X-API-KEY: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
+        --header "X-CHECKSUM: ${checksum}" \
         --write-out "%{http_code}\n" \
-        --output /tmp/request_${HOSTNAME}.json \
-        http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/request/${HOSTNAME})
+        --request GET \
+        --output ${WORK_DIR}/pki/${HOSTNAME}/${HOSTNAME}.tgz \
+        http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/cert/${HOSTNAME})
+
 
       if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
       then
-
-        echo " [i] certifiacte request was successful"
-        echo " [i] download and install the certificate"
-
-        masterName=$(jq --raw-output .master_name /tmp/request_${HOSTNAME}.json)
-        checksum=$(jq --raw-output .checksum /tmp/request_${HOSTNAME}.json)
-
-#        rm -f /tmp/request_${HOSTNAME}.json
-
-        mkdir -p ${WORK_DIR}/pki/${HOSTNAME}
-
-        # get our created cert
-        #
-        curl \
-          --user ${ICINGA_CERT_SERVICE_BA_USER}:${ICINGA_CERT_SERVICE_BA_PASSWORD} \
-          --silent \
-          --request GET \
-          --header "X-API-USER: ${ICINGA_CERT_SERVICE_API_USER}" \
-          --header "X-API-KEY: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
-          --header "X-CHECKSUM: ${checksum}" \
-          --write-out "%{http_code}\n" \
-          --request GET \
-          --output ${WORK_DIR}/pki/${HOSTNAME}/${HOSTNAME}.tgz \
-          http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/cert/${HOSTNAME}
 
         cd ${WORK_DIR}/pki/${HOSTNAME}
 
@@ -132,52 +74,89 @@ icinga_cert_service() {
 
         tar -xzf ${HOSTNAME}.tgz
 
+        if [ ! -f ${HOSTNAME}.pem ]
+        then
+          cat ${HOSTNAME}.crt ${HOSTNAME}.key >> ${HOSTNAME}.pem
+        fi
+
         # store the master for later restart
         #
-        echo "${masterName}" > ${WORK_DIR}/pki/${HOSTNAME}/master
+        echo "${master_name}" > ${WORK_DIR}/pki/${HOSTNAME}/master
 
       else
+        echo " [E] can't download out certificate!"
 
-        echo " [E] ${code} - the cert-service has an error."
-        cat /tmp/request_${HOSTNAME}.json
+        rm -rf ${WORK_DIR}/pki 2> /dev/null
 
-        rm -f /tmp/request_${HOSTNAME}.json
+        unset ICINGA_API_PKI_PATH
+
         exit 1
       fi
+    else
 
+      error=$(cat /tmp/request_${HOSTNAME}.json)
+
+      echo " [E] ${code} - the cert-service tell us a problem: '${error}'"
+      echo " [E] exit ..."
+
+      rm -f /tmp/request_${HOSTNAME}.json
+      exit 1
     fi
 
-    export ICINGA_API_PKI_PATH=${WORK_DIR}/pki/${HOSTNAME}
-    export ICINGA_API_NODE_NAME=${HOSTNAME}
   fi
 }
 
-validate_cert() {
+# validate our lokal certificate against our certificate service
+# with an API Request against
+# http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/validate/${checksum})
+#
+# if this failed, the PKI schould be removed
+#
+validate_local_ca() {
 
-  if [ -d ${WORK_DIR}/pki/${HOSTNAME} ]
+  if [ -f ${WORK_DIR}/pki/${HOSTNAME}/ca.crt ]
   then
-    cd ${WORK_DIR}/pki/${HOSTNAME}
+    checksum=$(sha256sum ${WORK_DIR}/pki/${HOSTNAME}/ca.crt | cut -f 1 -d ' ')
 
-    if [ ! -f ${HOSTNAME}.pem ]
-    then
-      cat ${HOSTNAME}.crt ${HOSTNAME}.key >> ${HOSTNAME}.pem
-    fi
-
-    curl \
+    # validate our ca file
+    #
+    code=$(curl \
+      --user ${ICINGA_CERT_SERVICE_BA_USER}:${ICINGA_CERT_SERVICE_BA_PASSWORD} \
       --silent \
-      --insecure \
-      --user ${ICINGA_CERT_SERVICE_API_USER}:${ICINGA_CERT_SERVICE_API_PASSWORD} \
-      --capath . \
-      --cert ./dashing.pem \
-      --cacert ./ca.crt \
-      https://${ICINGA_HOST}:${ICINGA_API_PORT}/v1/status/CIB
+      --request GET \
+      --header "X-API-USER: ${ICINGA_CERT_SERVICE_API_USER}" \
+      --header "X-API-KEY: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
+      --write-out "%{http_code}\n" \
+      --output /tmp/validate_ca_${HOSTNAME}.json \
+      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/validate/${checksum})
 
-    if [[ $? -gt 0 ]]
+    if ( [ $? -eq 0 ] && [ ${code} == 200 ] )
     then
+      rm -f /tmp/validate_ca_${HOSTNAME}.json
+    else
+
+      status=$(echo "${code}" | jq --raw-output .status 2> /dev/null)
+      message=$(echo "${code}" | jq --raw-output .message 2> /dev/null)
+
+      echo " [w] our master has a new CA"
+
+      rm -f /tmp/validate_ca_${HOSTNAME}.json
       rm -rf ${WORK_DIR}/pki
     fi
+  else
+    # we have no local cert file ..
+    :
   fi
 }
 
-validate_cert
-icinga_cert_service
+. /init/wait_for/cert_service.sh
+get_certificate
+
+
+if [ -d ${WORK_DIR}/pki/${HOSTNAME} ]
+then
+  echo " [i] export PKI vars"
+
+  export ICINGA_API_PKI_PATH=${WORK_DIR}/pki/${HOSTNAME}
+  export ICINGA_API_NODE_NAME=${HOSTNAME}
+fi

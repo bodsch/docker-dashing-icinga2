@@ -1,17 +1,17 @@
 
-FROM bodsch/docker-dashing:1709.1
+FROM bodsch/docker-dashing:1711.1
 
 MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
 
 ENV \
-  BUILD_DATE="2017-09-26" \
+  BUILD_DATE="2017-11-09" \
   DASHBOARD="icinga2" \
   ICINGA2_GEM_VERSION="0.9"
 
 EXPOSE 3030
 
 LABEL \
-  version="1709" \
+  version="1711" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Dashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Dashing Icinga2 Docker Image" \
@@ -64,7 +64,9 @@ RUN \
     /tmp/* \
     /build \
     /var/cache/apk/* \
-    /usr/lib/ruby/gems/current/cache/*
+    /usr/lib/ruby/gems/current/cache/* \
+    /root/.gem \
+    /root/.bundle
 
 COPY rootfs/ /
 
