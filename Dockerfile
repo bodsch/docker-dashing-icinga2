@@ -1,17 +1,16 @@
 
-FROM bodsch/docker-dashing:1711.1
-
-MAINTAINER Bodo Schulz <bodo@boone-schulz.de>
+FROM bodsch/docker-dashing:1712-r1
 
 ENV \
-  BUILD_DATE="2017-11-09" \
+  BUILD_DATE="2017-12-22" \
   DASHBOARD="icinga2" \
   ICINGA2_GEM_VERSION="0.9"
 
 EXPOSE 3030
 
 LABEL \
-  version="1711" \
+  version="1712" \
+  maintainer="Bodo Schulz <bodo@boone-schulz.de>" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Dashing Icinga2 Docker Image" \
   org.label-schema.description="Inofficial Dashing Icinga2 Docker Image" \
@@ -28,15 +27,12 @@ LABEL \
 COPY build /build
 
 RUN \
-  apk --no-cache update && \
-  apk --no-cache upgrade && \
-  apk --no-cache add \
-    build-base \
-    git \
+  apk update  --quiet --no-cache && \
+  apk upgrade --quiet --no-cache && \
+  apk add --quiet --virtual .build-deps \
+    build-base git ruby-dev openssl-dev && \
+  apk add --quiet --no-cache \
     jq \
-    openssl-dev \
-    ruby-dev \
-    openssl-dev \
     supervisor && \
   cd /opt && \
   smashing new ${DASHBOARD} && \
@@ -45,7 +41,6 @@ RUN \
   cd ${DASHBOARD} && \
   bundle config local.icinga2 /build && \
   sed -i "/gem 'twitter'/d" Gemfile && \
-  #
   cd /opt/${DASHBOARD} && \
   count=$(ls -1 /build/*.gem 2> /dev/null | tail -n1) && \
   if [ ! -z ${count} ] ; then \
@@ -53,13 +48,8 @@ RUN \
   else \
     echo "gem 'icinga2', '~> ${ICINGA2_GEM_VERSION}'" >> Gemfile ; \
   fi && \
-  #
   bundle update && \
-  apk del --purge \
-    build-base \
-    git \
-    ruby-dev \
-    openssl-dev && \
+  apk del --quiet --purge .build-deps && \
   rm -rf \
     /tmp/* \
     /build \
