@@ -37,7 +37,7 @@ app_coffee="${DASHING_PATH}/assets/javascripts/application.coffee"
 if [ $(grep -c "Batman.config.viewPrefix" ${app_coffee})  -eq 0 ]
 then
 
-  ed ${app_coffee} << END
+  ed ${app_coffee} > /dev/null << END
 9i
 Batman.config.viewPrefix = '%PROXY_PATH%/views'
 .
@@ -45,6 +45,7 @@ w
 q
 END
 fi
+echo ""
 
 sed -i \
   -e 's|%PROXY_PATH%|'${PROXY_PATH}'|g' \

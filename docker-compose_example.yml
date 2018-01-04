@@ -1,23 +1,9 @@
 # version: '2.0'
 
-
-database:
-  image: bodsch/docker-mysql:1711.1
-  container_name: database
-  hostname: database
-  ports:
-    - 3306:3306
-  environment:
-    - MYSQL_SYSTEM_USER=root
-    - MYSQL_ROOT_PASS=vYUQ14SGVrJRi69PsujC
-  volumes:
-    - /etc/localtime:/etc/localtime:ro
-    - /tmp/docker-data/database:/srv
-
 # the Icinga2 Master
 # includes a certificate service to create and provide a icinga certificate
 icinga2-master:
-  image: bodsch/docker-icinga2:2.7.1-r4
+  image: bodsch/docker-icinga2:2.8.0-r2
   container_name: icinga2-master
   hostname: icinga2-master.matrix.lan
   ports:
@@ -25,9 +11,6 @@ icinga2-master:
     - 4567:4567
   environment:
     - ICINGA_API_USERS=root:icinga,dashing:dashing,cert:foo-bar
-    - MYSQL_HOST=database
-    - MYSQL_ROOT_USER=root
-    - MYSQL_ROOT_PASS=vYUQ14SGVrJRi69PsujC
     - ICINGA_MASTER=icinga2-master.matrix.lan
     - BASIC_AUTH_USER=foofoo
     - BASIC_AUTH_PASS=barbar
@@ -46,8 +29,6 @@ icinga2-master:
   volumes:
     - /etc/localtime:/etc/localtime:ro
     - /tmp/docker-data/icinga2-master:/srv
-  links:
-    - database:database
 
 # the first icinga2 satellite
 # ask the master above for an certificate
@@ -58,19 +39,26 @@ dashing-icinga2:
   ports:
     - 3030:3030
   environment:
-    - DEBUG=0
-    - ICINGA_HOST=icinga2-master.matrix.lan
-    - ICINGA_API_USER=root
-    - ICINGA_API_PASSWORD=icinga
-    - ICINGAWEB_URL=http://localhost/icinga
-    - ICINGA_CERT_SERVICE=true
-    - ICINGA_CERT_SERVICE_BA_USER=foofoo
-    - ICINGA_CERT_SERVICE_BA_PASSWORD=barbar
-    - ICINGA_CERT_SERVICE_API_USER=root
-    - ICINGA_CERT_SERVICE_API_PASSWORD=icinga
-    - ICINGA_CERT_SERVICE_SERVER=icinga2-master
-    - ICINGA_CERT_SERVICE_PORT=4567
-    - ICINGA_CERT_SERVICE_PATH=/
+    DEBUG: 0
+    ICINGA_HOST: icinga2-master.matrix.lan
+    ICINGA_API_USER: root
+    ICINGA_API_PASSWORD: icinga
+    ICINGAWEB_URL: http://localhost/icinga
+    ICINGA_CERT_SERVICE: true
+    ICINGA_CERT_SERVICE_BA_USER: foofoo
+    ICINGA_CERT_SERVICE_BA_PASSWORD: barbar
+    ICINGA_CERT_SERVICE_API_USER: root
+    ICINGA_CERT_SERVICE_API_PASSWORD: icinga
+    ICINGA_CERT_SERVICE_SERVER: icinga2-master
+    ICINGA_CERT_SERVICE_PORT: 4567
+    ICINGA_CERT_SERVICE_PATH: /
+    ICINGA_CERT_SERVICE: '{
+        "ba": { "user":"foofoo", "password":"barbar" },
+        "api": { "user":"dashing", "password":"dashing" },
+        "server": "icinga2-master",
+        "port": 4567,
+        "path": "/"
+      }'
   volumes:
     - /etc/localtime:/etc/localtime:ro
     - /tmp/docker-data/dashing-icinga2:/srv

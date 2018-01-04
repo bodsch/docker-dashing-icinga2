@@ -5,7 +5,7 @@ wait_for_icinga_cert_service() {
 
   # the CERT-Service API use an Basic-Auth as first Authentication *AND*
   # use an own API Userr
-  if [ ${ICINGA_CERT_SERVICE} ]
+  if [ "${USE_CERT_SERVICE}" == "true" ]
   then
 
     echo " [i] waiting for our cert-service on '${ICINGA_CERT_SERVICE_SERVER}' to come up"
@@ -77,11 +77,12 @@ wait_for_icinga_cert_service() {
       sleep 5s
     fi
   else
-    echo " [w] missing variables:"
-    echo "     '${ICINGA_CERT_SERVICE_BA_USER}'"
-    echo "     '${ICINGA_CERT_SERVICE_BA_PASSWORD}'"
-    echo "     '${ICINGA_CERT_SERVICE_API_USER}'"
-    echo "     '${ICINGA_CERT_SERVICE_API_PASSWORD}'"
+    echo " [w] for using the certificate service, we miss requirement settings:"
+    echo "     ICINGA_CERT_SERVICE_SERVER: '${ICINGA_CERT_SERVICE_SERVER}'"
+    echo "     ICINGA_CERT_SERVICE_BA_USER: '${ICINGA_CERT_SERVICE_BA_USER}'"
+    echo "     ICINGA_CERT_SERVICE_BA_PASSWORD: '${ICINGA_CERT_SERVICE_BA_PASSWORD}'"
+    echo "     ICINGA_CERT_SERVICE_API_USER: '${ICINGA_CERT_SERVICE_API_USER}'"
+    echo "     ICINGA_CERT_SERVICE_API_PASSWORD: '${ICINGA_CERT_SERVICE_API_PASSWORD}'"
   fi
 }
 

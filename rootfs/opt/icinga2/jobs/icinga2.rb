@@ -1,17 +1,30 @@
 
 require 'icinga2'
 
-icinga_host          = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
-icinga_api_port      = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
-icinga_api_user      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
-icinga_api_password  = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
-icinga_api_pki_path  = ENV.fetch( 'ICINGA_API_PKI_PATH'     , nil )
-icinga_api_node_name = ENV.fetch( 'ICINGA_API_NODE_NAME'    , nil )
-icinga_cluster       = ENV.fetch( 'ICINGA_CLUSTER'          , false )
-icinga_satellite     = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
+icinga_host          = ENV.fetch( 'ICINGA_HOST'           , 'icinga2' )
+icinga_api_port      = ENV.fetch( 'ICINGA_API_PORT'       , 5665 )
+icinga_api_user      = ENV.fetch( 'ICINGA_API_USER'       , 'admin' )
+icinga_api_password  = ENV.fetch( 'ICINGA_API_PASSWORD'   , nil )
+icinga_api_pki_path  = ENV.fetch( 'ICINGA_API_PKI_PATH'   , nil )
+icinga_api_node_name = ENV.fetch( 'ICINGA_API_NODE_NAME'  , nil )
+interval             = ENV.fetch('INTERVAL'               , '20s' )
+delay                = ENV.fetch('RUN_DELAY'              , '10s' )
 
-# convert string to bool
-icinga_cluster   = icinga_cluster.to_s.eql?('true') ? true : false
+# -----------------------------------------------------------------------------
+# validate durations for the Scheduler
+
+def validate_scheduler_values( duration, default )
+  raise ArgumentError.new(format('wrong type. \'duration\' must be an String, given %s', duration.class.to_s )) unless( duration.is_a?(String) )
+  raise ArgumentError.new(format('wrong type. \'default\' must be an Float, given %s', default.class.to_s )) unless( default.is_a?(Float) )
+  i = Rufus::Scheduler.parse( duration.to_s )
+  i = default.to_f if( i < default.to_f )
+  Rufus::Scheduler.to_duration( i )
+end
+
+interval         = validate_scheduler_values( interval, 20.0 )
+delay            = validate_scheduler_values( delay, 10.0 )
+
+# -----------------------------------------------------------------------------
 
 config = {
   icinga: {
@@ -22,15 +35,13 @@ config = {
       password: icinga_api_password,
       pki_path: icinga_api_pki_path,
       node_name: icinga_api_node_name
-    },
-    cluster: icinga_cluster,
-    satellite: icinga_satellite,
+    }
   }
 }
 
 icinga = Icinga2::Client.new( config )
 
-SCHEDULER.every '20s', :first_in => 0 do |job|
+SCHEDULER.every( interval, :first_in => delay do )
 
   if( icinga.available? == true )
 
@@ -40,16 +51,54 @@ SCHEDULER.every '20s', :first_in => 0 do |job|
       icinga.cib_data
       icinga.host_objects
 
-      avg_latency, avg_execution_time = icinga.average_statistics.values
-      hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = icinga.interval_statistics.values
+#       avg_latency, avg_execution_time = icinga.average_statistics.values
 
-      hosts_up, hosts_down, hosts_pending, hosts_unreachable, hosts_in_downtime, hosts_acknowledged = icinga.host_statistics.values
+    interval_statistics = icinga.interval_statistics
+    hosts_active_checks     = interval_statistics.dig(:hosts_active_checks)
+    hosts_passive_checks    = interval_statistics.dig(:hosts_passive_checks)
+    services_active_checks  = interval_statistics.dig(:services_active_checks)
+    services_passive_checks = interval_statistics.dig(:services_passive_checks)
 
-      host_problems_all, host_problems_down, host_problems_critical, host_problems_unknown = icinga.host_problems.values
+#    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = icinga.interval_statistics.values
 
-      services_ok, services_warning, services_critical, services_unknown, services_pending, services_in_downtime, services_acknowledged = icinga.service_statistics.values
+#    hosts_up, hosts_down, hosts_pending, hosts_unreachable, hosts_in_downtime, hosts_acknowledged = icinga.host_statistics.values
 
-      service_problems_handled_all, service_problems_handled_critical, service_problems_handled_warning, service_problems_handled_unknown = icinga.service_problems_handled.values
+    host_problems =icinga.host_problems
+    host_problems_all      = host_problems.dig(:all)
+    host_problems_down     = host_problems.dig(:down)
+    host_problems_critical = host_problems.dig(:critical)
+    host_problems_unknown  = host_problems.dig(:unknown)
+
+#     host_problems_all, host_problems_down, host_problems_critical, host_problems_unknown = icinga.host_problems.values
+
+    service_statistics = icinga.service_statistics
+    services_ok           = service_statistics.dig(:ok)
+    services_warning      = service_statistics.dig(:warning)
+    services_critical     = service_statistics.dig(:critical)
+    services_unknown      = service_statistics.dig(:unknown)
+    services_pending      = service_statistics.dig(:pending)
+    services_in_downtime  = service_statistics.dig(:in_downtime)
+    services_acknowledged = service_statistics.dig(:acknowledged)
+
+#     services_ok, services_warning, services_critical, services_unknown, services_pending, services_in_downtime, services_acknowledged = icinga.service_statistics.values
+
+    services_handled = icinga.service_problems_handled
+
+    service_problems_handled_all      = services_handled.dig(:all)
+    service_problems_handled_warning  = services_handled.dig(:warning)
+    service_problems_handled_critical = services_handled.dig(:critical)
+    service_problems_handled_unknown  = services_handled.dig(:unknown)
+
+
+#       hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = icinga.interval_statistics.values
+#
+#       hosts_up, hosts_down, hosts_pending, hosts_unreachable, hosts_in_downtime, hosts_acknowledged = icinga.host_statistics.values
+#
+#       host_problems_all, host_problems_down, host_problems_critical, host_problems_unknown = icinga.host_problems.values
+#
+#       services_ok, services_warning, services_critical, services_unknown, services_pending, services_in_downtime, services_acknowledged = icinga.service_statistics.values
+#
+#       service_problems_handled_all, service_problems_handled_critical, service_problems_handled_warning, service_problems_handled_unknown = icinga.service_problems_handled.values
 
       version, revision = icinga.version.values
 
