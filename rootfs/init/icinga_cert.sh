@@ -36,7 +36,7 @@ get_certificate() {
       --header "X-API-PASSWORD: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
       --write-out "%{http_code}\n" \
       --output /tmp/request_${HOSTNAME}.json \
-      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/request/${HOSTNAME})
+      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}/v2/request/${HOSTNAME})
 
     if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
     then
@@ -65,7 +65,7 @@ get_certificate() {
         --write-out "%{http_code}\n" \
         --request GET \
         --output ${WORK_DIR}/pki/${HOSTNAME}/${HOSTNAME}.tgz \
-        http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/cert/${HOSTNAME})
+        http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}/v2/cert/${HOSTNAME})
 
 
       if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
@@ -122,7 +122,7 @@ get_certificate() {
 
 # validate our lokal certificate against our certificate service
 # with an API Request against
-# http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/validate/${checksum})
+# http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}/v2/validate/${checksum})
 #
 # if this failed, the PKI schould be removed
 #
@@ -142,7 +142,7 @@ validate_local_ca() {
       --header "X-API-PASSWORD: ${ICINGA_CERT_SERVICE_API_PASSWORD}" \
       --write-out "%{http_code}\n" \
       --output /tmp/validate_ca_${HOSTNAME}.json \
-      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}v2/validate/${checksum})
+      http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}/v2/validate/${checksum})
 
     if ( [ $? -eq 0 ] && [ ${code} == 200 ] )
     then
@@ -222,6 +222,8 @@ extract_vars() {
       ICINGA_CERT_SERVICE_API_PASSWORD=${ICINGA_CERT_SERVICE_API_PASSWORD:-''}
       ICINGA_CERT_SERVICE_BA_USER=${ICINGA_CERT_SERVICE_BA_USER:-"admin"}
       ICINGA_CERT_SERVICE_BA_PASSWORD=${ICINGA_CERT_SERVICE_BA_PASSWORD:-"admin"}
+
+      ICINGA_CERT_SERVICE_PATH=$(echo "${ICINGA_CERT_SERVICE_PATH}" | cut -d "/" -f 2)
     fi
   fi
 
@@ -249,6 +251,9 @@ get_certificate
 if [ -d ${WORK_DIR}/pki/${HOSTNAME} ]
 then
   echo " [i] export PKI vars"
+
+  export ICINGA_API_USER=${ICINGA_CERT_SERVICE_API_USER}
+  export ICINGA_API_PASSWORD=${ICINGA_CERT_SERVICE_API_PASSWORD}
 
   export ICINGA_API_PKI_PATH=${WORK_DIR}/pki/${HOSTNAME}
   export ICINGA_API_NODE_NAME=${HOSTNAME}
