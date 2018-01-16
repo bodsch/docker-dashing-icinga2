@@ -32,7 +32,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
 
-
   # the first icinga2 satellite
   # ask the master above for an certificate
   dashing-icinga2:
@@ -56,14 +55,6 @@ services:
       ICINGA_CERT_SERVICE_SERVER: icinga2-master.matrix.lan
       ICINGA_CERT_SERVICE_PORT: 8080
       ICINGA_CERT_SERVICE_PATH: /
-
-  #    ICINGA_CERT_SERVICE: '{
-  #        "ba": { "user":"foofoo", "password":"barbar" },
-  #        "api": { "user":"dashing", "password":"dashing" },
-  #        "server": "icinga2-master",
-  #        "port": 4567,
-  #        "path": "/"
-  #      }'
     volumes:
       - /etc/localtime:/etc/localtime:ro
     links:

@@ -42,8 +42,9 @@ get_certificate() {
     if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
     then
 
+      sleep 4s
+
       log_info "certifiacte request was successful"
-      sleep 2s
       log_info "download and install the certificate"
 
       master_name=$(jq --raw-output .master_name /tmp/request_${HOSTNAME}.json)
@@ -54,6 +55,8 @@ get_certificate() {
       mkdir -p ${WORK_DIR}/pki/${HOSTNAME}
 
       cp -a /tmp/request_${HOSTNAME}.json ${WORK_DIR}/pki/${HOSTNAME}/
+
+      sleep 4s
 
       . /init/wait_for/cert_service.sh
 
@@ -70,7 +73,6 @@ get_certificate() {
         --request GET \
         --output ${WORK_DIR}/pki/${HOSTNAME}/${HOSTNAME}.tgz \
         http://${ICINGA_CERT_SERVICE_SERVER}:${ICINGA_CERT_SERVICE_PORT}${ICINGA_CERT_SERVICE_PATH}/v2/cert/${HOSTNAME})
-
 
       if ( [ $? -eq 0 ] && [ ${code} -eq 200 ] )
       then
@@ -95,6 +97,10 @@ get_certificate() {
         # store the master for later restart
         #
         echo "${master_name}" > ${WORK_DIR}/pki/${HOSTNAME}/master
+
+        sleep 10s
+
+        restart_master
 
       else
         log_error "can't download out certificate!"
@@ -186,7 +192,7 @@ validate_cert() {
     cd ${WORK_DIR}/pki/${HOSTNAME}
 
     log_info "validate our certifiacte"
-
+set -x
     code=$(curl \
       --silent \
       --insecure \
@@ -207,6 +213,7 @@ validate_cert() {
       unset ICINGA_API_PKI_PATH
       unset ICINGA_API_NODE_NAME
     fi
+set +x
   fi
 }
 
@@ -300,6 +307,36 @@ extract_vars() {
     USE_CERT_SERVICE="false"
   fi
 }
+
+
+
+restart_master() {
+
+  sleep $(shuf -i 5-30 -n 1)s
+
+  . /init/wait_for/icinga_master.sh
+
+  # restart the master to activate the zone
+  #
+  log_info "restart the master '${ICINGA_MASTER}' to activate our certificate"
+  code=$(curl \
+    --user ${ICINGA_CERT_SERVICE_API_USER}:${ICINGA_CERT_SERVICE_API_PASSWORD} \
+    --silent \
+    --header 'Accept: application/json' \
+    --request POST \
+    --insecure \
+    https://${ICINGA_MASTER}:5665/v1/actions/restart-process )
+
+  if [[ $? -gt 0 ]]
+  then
+    status=$(echo "${code}" | jq --raw-output '.results[].code' 2> /dev/null)
+    message=$(echo "${code}" | jq --raw-output '.results[].status' 2> /dev/null)
+
+    log_error "${code}"
+    log_error "${message}"
+  fi
+}
+
 
 extract_vars
 . /init/wait_for/cert_service.sh
