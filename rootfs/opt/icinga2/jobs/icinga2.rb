@@ -1,7 +1,7 @@
 
 require 'icinga2'
 
-icinga_host          = ENV.fetch('ICINGA_HOST'          , 'icinga2')
+icinga_host          = ENV.fetch('ICINGA_MASTER'        , 'icinga2')
 icinga_api_port      = ENV.fetch('ICINGA_API_PORT'      , 5665)
 icinga_api_user      = ENV.fetch('ICINGA_API_USER'      , 'root')
 icinga_api_password  = ENV.fetch('ICINGA_API_PASSWORD'  , nil)

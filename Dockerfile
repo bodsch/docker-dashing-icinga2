@@ -32,7 +32,7 @@ RUN \
   apk add --quiet --virtual .build-deps \
     build-base git ruby-dev openssl-dev && \
   apk add --quiet --no-cache \
-    jq supervisor yajl-tools && \
+    jq supervisor tzdata yajl-tools && \
   cd /opt && \
   smashing new ${DASHBOARD} && \
   rm -f /opt/${DASHBOARD}/jobs/twitter* && \

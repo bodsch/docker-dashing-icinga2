@@ -9,28 +9,28 @@ AUTH_TOKEN=${AUTH_TOKEN:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | 
 #
 # DASHING_PATH="/opt/${DASHBOARD}"
 # CONFIG_FILE="${DASHING_PATH}/config.ru"
-#
-# export WORK_DIR=/srv
+
+. /init/output.sh
+
+export WORK_DIR=/srv
 
 # -------------------------------------------------------------------------------------------------
 
 . /init/configure_smashing.sh
 . /init/icinga_cert.sh
 
-echo -e "\n"
-echo " ==================================================================="
-echo " Dashing AUTH_TOKEN set to '${AUTH_TOKEN}'"
-echo " ==================================================================="
-echo ""
+log_info "==================================================================="
+log_info " Dashing AUTH_TOKEN set to '${AUTH_TOKEN}'"
+log_info "==================================================================="
 
 # -------------------------------------------------------------------------------------------------
 
-echo -e "\n Starting Supervisor.\n\n"
+log_info "Starting Supervisor."
 
 if [ -f /etc/supervisord.conf ]
 then
   :
-  # /usr/bin/supervisord -c /etc/supervisord.conf >> /dev/null
+  /usr/bin/supervisord -c /etc/supervisord.conf >> /dev/null
 fi
 
 
