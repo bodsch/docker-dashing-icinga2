@@ -10,6 +10,8 @@ icinga_api_node_name = ENV.fetch('ICINGA_API_NODE_NAME' , nil)
 interval             = ENV.fetch('INTERVAL'             , '20s')
 delay                = ENV.fetch('RUN_DELAY'            , '10s')
 
+debug                = ENV.fetch('DEBUG'                , false)
+
 # -----------------------------------------------------------------------------
 # validate durations for the Scheduler
 
@@ -25,6 +27,8 @@ interval         = validate_scheduler_values( interval, 20.0 )
 delay            = validate_scheduler_values( delay, 10.0 )
 
 # -----------------------------------------------------------------------------
+
+debug = debug.to_s.eql?('true') ? true : false
 
 config = {
   icinga: {
@@ -46,6 +50,8 @@ rescue => error
   $stderr.puts( error.backtrace.join("\n") )
 end
 
+puts ' => enable debug output' if(debug)
+
 SCHEDULER.every interval, :first_in => delay do |job|
 
   if( icinga.available? == true )
@@ -57,19 +63,19 @@ SCHEDULER.every interval, :first_in => delay do |job|
       icinga.host_objects
 
       average_statistics = icinga.average_statistics
-      puts "average_statistics    : #{average_statistics}"
+      puts "average_statistics    : #{average_statistics}" if(debug)
       avg_latency        = average_statistics.dig(:avg_latency)
       avg_execution_time = average_statistics.dig(:avg_execution_time)
 
       interval_statistics     = icinga.interval_statistics
-      puts "interval_statistics : #{interval_statistics}"
+      puts "interval_statistics : #{interval_statistics}" if(debug)
       hosts_active_checks     = interval_statistics.dig(:hosts_active_checks)
       hosts_passive_checks    = interval_statistics.dig(:hosts_passive_checks)
       services_active_checks  = interval_statistics.dig(:services_active_checks)
       services_passive_checks = interval_statistics.dig(:services_passive_checks)
 
       host_statistics    = icinga.host_statistics
-      puts "host_statistics   : #{host_statistics}"
+      puts "host_statistics   : #{host_statistics}" if(debug)
       hosts_up           = host_statistics.dig(:up)
       hosts_down         = host_statistics.dig(:down)
       hosts_pending      = host_statistics.dig(:pending)
@@ -78,7 +84,7 @@ SCHEDULER.every interval, :first_in => delay do |job|
       hosts_acknowledged = host_statistics.dig(:acknowledged)
 
       host_problems          = icinga.host_problems
-      puts "host_problems: #{host_problems}"
+      puts "host_problems: #{host_problems}" if(debug)
       host_problems_all      = host_problems.dig(:all)
       host_problems_down     = host_problems.dig(:down)
       host_problems_critical = host_problems.dig(:critical)
@@ -86,7 +92,7 @@ SCHEDULER.every interval, :first_in => delay do |job|
       host_problems_adjusted = host_problems.dig(:adjusted)
 
       service_statistics    = icinga.service_statistics
-      puts "service_statistics: #{service_statistics}"
+      puts "service_statistics: #{service_statistics}" if(debug)
       services_ok           = service_statistics.dig(:ok)
       services_warning      = service_statistics.dig(:warning)
       services_critical     = service_statistics.dig(:critical)
@@ -96,7 +102,7 @@ SCHEDULER.every interval, :first_in => delay do |job|
       services_acknowledged = service_statistics.dig(:acknowledged)
 
       services_handled = icinga.service_problems_handled
-      puts "services_handled: #{services_handled}"
+      puts "services_handled: #{services_handled}" if(debug)
       service_problems_handled_all      = services_handled.dig(:all)
       service_problems_handled_warning  = services_handled.dig(:warning)
       service_problems_handled_critical = services_handled.dig(:critical)
@@ -122,15 +128,22 @@ SCHEDULER.every interval, :first_in => delay do |job|
       work_queue_stats = icinga.work_queue_statistics
 
       severity_stats = []
-      problem_services.each do |name,state|
-        severity_stats.push( { label: Icinga2::Converts.format_service(name) } )
+      service_problems_severity.each do |name,state|
+        severity_stats.push({
+          label: Icinga2::Converts.format_service(name),
+          color: icinga.state_to_color(state.to_int, false),
+          state: state.to_int
+        })
+      end
+
+      order = [2,1,3]
+      severity_stats = severity_stats.sort do |a, b|
+        order.index(a[:state]) <=> order.index(b[:state])
       end
 
       work_queue_stats.each do |name, value|
         icinga_stats.push( { label: name, value: '%0.2f' % value } )
       end
-
-#      hosts_handled_problems, hosts_down_adjusted = icinga.hosts_adjusted.values
 
       # -----------------------------------------------------------------------------------
 
@@ -183,32 +196,35 @@ SCHEDULER.every interval, :first_in => delay do |job|
         { label: 'Acknowledged', value: services_acknowledged, color: color_services_acknowledged }
       ]
       # -----------------------------------------------------------------------------------
-      puts "Severity: #{severity_stats}"
-      puts "Icinga  : #{icinga_stats}"
-      puts "Handled : #{handled_stats}"
-      puts "hosts_adjusted    : #{icinga.hosts_adjusted}"
-      puts "services_adjusted : #{icinga.services_adjusted}"
-      puts "host_statistics   : #{icinga.host_statistics}"
-      puts "service_statistics: #{icinga.service_statistics}"
 
-      puts "service handled critical: " + service_problems_handled_critical.to_s
-      puts "service handled warnings: " + service_problems_handled_warning.to_s
-      puts "service handled unknowns: " + service_problems_handled_unknown.to_s
+      if(debug)
+        puts "Severity: #{severity_stats}"
+        puts "Icinga  : #{icinga_stats}"
+        puts "Handled : #{handled_stats}"
+        puts "hosts_adjusted    : #{icinga.hosts_adjusted}"
+        puts "services_adjusted : #{icinga.services_adjusted}"
+        puts "host_statistics   : #{icinga.host_statistics}"
+        puts "service_statistics: #{icinga.service_statistics}"
 
-      puts format('Host Up             : %s', hosts_up)
-      puts format('Host Down           : %s', hosts_down)
-      puts format('Host pending        : %s', hosts_pending)
-      puts format('Host unrechable     : %s', hosts_unreachable)
-      puts format('Host in Downtime    : %s', hosts_in_downtime)
-      puts format('Host acknowledged   : %s', hosts_acknowledged)
+        puts "service handled critical: " + service_problems_handled_critical.to_s
+        puts "service handled warnings: " + service_problems_handled_warning.to_s
+        puts "service handled unknowns: " + service_problems_handled_unknown.to_s
 
-      puts format('Service Critical    : %s', services_critical)
-      puts format('Service Warning     : %s', services_warning)
-      puts format('Service Unknown     : %s', services_unknown )
-      puts format('Service Acknowledged: %s', services_acknowledged)
-      puts format('Host Acknowledged   : %s', hosts_acknowledged)
-      puts format('Service In Downtime : %s', services_in_downtime)
-      puts format('Host In Downtime    : %s', hosts_in_downtime)
+        puts format('Host Up             : %s', hosts_up)
+        puts format('Host Down           : %s', hosts_down)
+        puts format('Host pending        : %s', hosts_pending)
+        puts format('Host unrechable     : %s', hosts_unreachable)
+        puts format('Host in Downtime    : %s', hosts_in_downtime)
+        puts format('Host acknowledged   : %s', hosts_acknowledged)
+
+        puts format('Service Critical    : %s', services_critical)
+        puts format('Service Warning     : %s', services_warning)
+        puts format('Service Unknown     : %s', services_unknown )
+        puts format('Service Acknowledged: %s', services_acknowledged)
+        puts format('Host Acknowledged   : %s', hosts_acknowledged)
+        puts format('Service In Downtime : %s', services_in_downtime)
+        puts format('Host In Downtime    : %s', hosts_in_downtime)
+      end
       # -----------------------------------------------------------------------------------
 
       send_event('icinga-host-meter', {

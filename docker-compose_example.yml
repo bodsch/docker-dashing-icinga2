@@ -28,7 +28,7 @@ services:
       - ICINGA_CERT_SERVICE_PATH=/
       - CARBON_HOST=
       - CARBON_PORT=2003
-      - DEMO_DATA=false
+      - DEMO_DATA=true
     volumes:
       - /etc/localtime:/etc/localtime:ro
 
@@ -42,12 +42,11 @@ services:
     ports:
       - 3030:3030
     environment:
-      DEBUG: 1
+      DEBUG: 'true'
       ICINGA_MASTER: icinga2-master.matrix.lan
       ICINGA_API_USER: root
       ICINGA_API_PASSWORD: icinga
       ICINGAWEB_URL: http://localhost/icinga
-      ICINGA_CERT_SERVICE: 'true'
       ICINGA_CERT_SERVICE_BA_USER: foofoo
       ICINGA_CERT_SERVICE_BA_PASSWORD: barbar
       ICINGA_CERT_SERVICE_API_USER: dashing
