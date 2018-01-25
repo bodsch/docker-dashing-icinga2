@@ -1,21 +1,21 @@
 // ----------------------------------------------------------------------------
 // Sass declarations
 // ----------------------------------------------------------------------------
-$background-color:  #165aa8;
+$background-color:  #47bbb3;
 $value-color:       #fff;
 $label-color:       rgba(255, 255, 255, 0.7);
 
-$background-color-green:  green;
+$background-color-green:  #44bb77;
 $background-color-green-1:  lighten($background-color-green, 60%);
 $background-color-green-2:  darken($background-color-green, 30%);
 $value-color-green:       #fff;
 
-$background-color-red:  red;
+$background-color-red:  #ff5566;
 $background-color-red-1:  lighten($background-color-red, 60%);
 $background-color-red-2:  darken($background-color-red, 30%);
 $value-color-red:       #fff;
 
-$background-color-yellow:  yellow;
+$background-color-yellow:  #ffaa44;
 $background-color-yellow-1:  lighten($background-color-yellow, 60%);
 $background-color-yellow-2:  darken($background-color-yellow, 30%);
 $value-color-yellow:       #000;
@@ -29,7 +29,6 @@ $background-color-grey:  #999999;
 $value-color-grey:       #fff;
 
 $title-color:       rgba(255, 255, 255, 0.7);
-// $title-color-uns:   rgba(0, 0, 0, 0.7);
 $moreinfo-color:    rgba(255, 255, 255, 0.7);
 
 @-webkit-keyframes icinga-yellow-background {
@@ -64,20 +63,16 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
 // ----------------------------------------------------------------------------
 .widget-icinga2 {
 
-  display: block !important;
-
-/*   background-color: $background-color; */
-
-  .title {
-    color: $title-color;
-    font-size: 25px;
-    text-align: center;
-  }
+  font-size: .9em;
 
   ul.list-nostyle {
     margin: 0px 2px 0 2px;
     list-style: none;
     text-align: left;
+  }
+  ul.list-nostyle li {
+    margin-bottom: 4px;
+/*     font-size: .9em !important; */
   }
 
   ul.list-nostyle div {
@@ -126,18 +121,18 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
       background-color: $background-color-grey;
       .value { color: $value-color-grey; }
   }
-
+/*
   .label {
     color: $label-color;
     font-size: 15px;
   }
-
+*/
   .value {
     float: right;
     margin-left: 50px;
-    margin-top: 5px;
+    margin-top: 2px;
     font-weight: 500;
-    font-size: 15px;
+/*     font-size: 15px; */
     color: $value-color;
   }
 
@@ -146,10 +141,7 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
   }
 
   .value .v, .value .h {
-
     padding: 0 4px 0 4px;
-/*    border: 1px solid silver;
-    border-radius: 3px; */
   }
 
   .value .h {
@@ -157,7 +149,7 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
   }
 
 }
-
+/*
 .widget-icinga2.color-blue {
   border: 1px solid silver
 }
@@ -182,4 +174,4 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
     background-color: $background-color-grey;
     .value { color: $value-color-grey; }
 }
-
+*/

@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Sass declarations
 // ----------------------------------------------------------------------------
-// $background-color:  #dc5945;
+
 $background-color:  #999999;
 $value-color:       #fff;
 
@@ -28,14 +28,6 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
 
   .value {
     color: $value-color;
-  }
-
-  .more-info {
-    color: $moreinfo-color;
-  }
-
-  .updated-at {
-    color: rgba(0, 0, 0, 0.3);
   }
 
   .small {

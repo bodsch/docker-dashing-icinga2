@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // Sass declarations
 // ----------------------------------------------------------------------------
-$background-color:  #165aa8;
+$background-color:  #47bbb3;
 $value-color:       #fff;
 
 $background-color-green:  #44bb77;
@@ -28,7 +28,7 @@ $background-color-grey:  #999999;
 $value-color-grey:       #fff;
 
 $title-color:       rgba(255, 255, 255, 0.7);
-$title-color-uns:   rgba(0, 0, 0, 0.7);
+$title-color-uns:       rgba(0, 0, 0, 0.7);
 $moreinfo-color:    rgba(255, 255, 255, 0.7);
 
 @-webkit-keyframes status-yellow-background {
@@ -63,18 +63,14 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
 // ----------------------------------------------------------------------------
 .widget-simplemon {
 
-/*   background-color: $background-color; */
-
-  .title {
-    color: $title-color;
-    font-size: 25px;
-    text-align: center;
-    margin-top: -3em;
-  }
+  background-color: $background-color;
 
   .value {
+    margin-top: 20px;
+    font-size: 60px;
     color: $value-color;
   }
+
 }
 .widget-simplemon.color-green {
     background-color: $background-color-green;

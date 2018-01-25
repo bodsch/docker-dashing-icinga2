@@ -7,7 +7,7 @@ icinga_api_user      = ENV.fetch('ICINGA_API_USER'      , 'root')
 icinga_api_password  = ENV.fetch('ICINGA_API_PASSWORD'  , nil)
 icinga_api_pki_path  = ENV.fetch('ICINGA_API_PKI_PATH'  , nil)
 icinga_api_node_name = ENV.fetch('ICINGA_API_NODE_NAME' , nil)
-interval             = ENV.fetch('INTERVAL'             , '20s')
+interval             = ENV.fetch('INTERVAL'             , '2m')
 delay                = ENV.fetch('RUN_DELAY'            , '10s')
 
 debug                = ENV.fetch('DEBUG'                , false)
@@ -23,7 +23,7 @@ def validate_scheduler_values( duration, default )
   Rufus::Scheduler.to_duration( i )
 end
 
-interval         = validate_scheduler_values( interval, 20.0 )
+interval         = validate_scheduler_values( interval, 120.0 )
 delay            = validate_scheduler_values( delay, 10.0 )
 
 # -----------------------------------------------------------------------------
