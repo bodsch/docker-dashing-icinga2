@@ -2,7 +2,8 @@
 FROM bodsch/docker-dashing:1801-r1
 
 ENV \
-  BUILD_DATE="2018-01-04" \
+  BUILD_DATE="2018-01-25" \
+  TZ='Europe/Berlin' \
   DASHBOARD="icinga2" \
   ICINGA2_GEM_VERSION="0.9"
 
@@ -32,7 +33,9 @@ RUN \
   apk add --quiet --virtual .build-deps \
     build-base git ruby-dev openssl-dev && \
   apk add --quiet --no-cache \
-    jq supervisor yajl-tools && \
+    jq tzdata yajl-tools && \
+  cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+  echo ${TZ} > /etc/timezone && \
   cd /opt && \
   smashing new ${DASHBOARD} && \
   rm -f /opt/${DASHBOARD}/jobs/twitter* && \

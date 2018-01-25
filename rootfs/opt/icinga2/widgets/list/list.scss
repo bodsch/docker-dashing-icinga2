@@ -13,8 +13,6 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
 // ----------------------------------------------------------------------------
 .widget-list {
 
-/*   background-color: $background-color; */
-
   .title {
     color: $title-color;
     position: absolute;
@@ -24,23 +22,16 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
     text-align: center;
   }
 
-/*
-  .title {
-    color: $title-color;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    margin-bottom: 15px;
-    font-size: 25px;
-    text-align: center;
-  }
-*/
   ol, ul {
     margin: 0 5px;
     text-align: left;
     color: $label-color;
     position: absolute;
     top: 2.5em;
+  }
+
+  ul {
+    color: #ffffff;
   }
 
   ol {
@@ -74,19 +65,19 @@ $moreinfo-color:    rgba(255, 255, 255, 0.7);
   }
 
   .green {
-    color: #44bb77;
+    background-color: #44bb77;
     font-size: 15px;
   }
   .yellow {
-    color: #ffaa44;
+    background-color: #44bb77;
     font-size: 15px;
   }
   .red {
-    color: #ff5566;
+    background-color: #ff5566;
     font-size: 15px;
   }
   .purple {
-    color: #aa44ff;
+    background-color: #aa44ff;
     font-size: 15px;
   }
 }
