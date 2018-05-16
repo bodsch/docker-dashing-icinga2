@@ -1,16 +1,19 @@
 
-FROM bodsch/docker-dashing:1801-r1
-
-ENV \
-  BUILD_DATE="2018-01-25" \
-  TZ='Europe/Berlin' \
-  DASHBOARD="icinga2" \
-  ICINGA2_GEM_VERSION="0.9"
+FROM bodsch/docker-dashing:latest
 
 EXPOSE 3030
 
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG DASHBOARD
+ARG ICINGA2_GEM_TYPE
+ARG ICINGA2_GEM_VERSION
+
+ENV \
+  TZ='Europe/Berlin'
+
 LABEL \
-  version="1801" \
+  version=${BUILD_VERSION} \
   maintainer="Bodo Schulz <bodo@boone-schulz.de>" \
   org.label-schema.build-date=${BUILD_DATE} \
   org.label-schema.name="Dashing Icinga2 Docker Image" \
@@ -29,13 +32,13 @@ COPY build /build
 
 RUN \
   apk update  --quiet --no-cache && \
-  apk upgrade --quiet --no-cache && \
   apk add --quiet --virtual .build-deps \
     build-base git ruby-dev openssl-dev && \
   apk add --quiet --no-cache \
     jq tzdata yajl-tools && \
   cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
   echo ${TZ} > /etc/timezone && \
+  [ -d /opt ] || mkdir /opt && \
   cd /opt && \
   smashing new ${DASHBOARD} && \
   rm -f /opt/${DASHBOARD}/jobs/twitter* && \
@@ -44,10 +47,12 @@ RUN \
   bundle config local.icinga2 /build && \
   sed -i "/gem 'twitter'/d" Gemfile && \
   echo "gem 'puma', '~> 3.10'" >> Gemfile && \
-  count=$(ls -1 /build/*.gem 2> /dev/null | tail -n1) && \
-  if [ ! -z ${count} ] ; then \
-    gem install --no-rdoc --no-ri ${count} ; \
-  else \
+  if [ "${ICINGA2_GEM_TYPE}" == "local" ] ; then \
+    for g in $(ls -1 /build/*.gem 2> /dev/null) ; do \
+      echo "install local gem '${g}'" && \
+      gem install --quiet --no-rdoc --no-ri ${g} ; \
+    done ; \
+  elif [ "${ICINGA2_GEM_TYPE}" == "stable" ] ; then \
     echo "gem 'icinga2', '~> ${ICINGA2_GEM_VERSION}'" >> Gemfile ; \
   fi && \
   bundle update --quiet && \

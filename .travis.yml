@@ -5,10 +5,28 @@ group: edge
 services:
   - docker
 
-install:
-  - docker build --tag bodsch/docker-dashing-icinga2 .
-  - docker run --detach --name dashing-icinga2 bodsch/docker-dashing-icinga2
+env:
+  global:
+    - BUILD_DATE=$(date +"%Y-%m-%d")
+    - BUILD_VERSION=$(date +"%y%m")
 
-script:
-  - docker ps | grep -q dashing-icinga2
+jobs:
+  include:
+    - stage: build, test and push docker image
+      script:
+        - make
+        - make start
+        - docker ps | grep -q dashing-icinga2
+        - make stop
+        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+        - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
+        - docker tag ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION} ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
+        - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
+
+#install:
+#  - docker build --tag bodsch/docker-dashing-icinga2 .
+#  - docker run --detach --name dashing-icinga2 bodsch/docker-dashing-icinga2
+#
+#script:
+#  - docker ps | grep -q dashing-icinga2
 

@@ -23,13 +23,4 @@ cd /opt/${DASHBOARD}
 /usr/bin/puma \
   --config /opt/${DASHBOARD}/config/puma.rb > /dev/null
 
-# log_info "Starting Supervisor."
-#
-# if [ -f /etc/supervisord.conf ]
-# then
-#   :
-#   /usr/bin/supervisord -c /etc/supervisord.conf >> /dev/null
-# fi
-
-
 # EOF
