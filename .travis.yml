@@ -20,7 +20,7 @@ jobs:
         - make stop
         - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
         - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
-        - docker tag ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION} ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
+        - docker tag  ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION} ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
         - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
 
 #install:

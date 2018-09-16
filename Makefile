@@ -8,10 +8,10 @@ REPO     = docker-dashing-icinga2
 NAME     = dashing-icinga2
 INSTANCE = default
 
-BUILD_DATE := $(shell date +%Y-%m-%d)
-BUILD_VERSION := $(shell date +%y%m)
-DASHBOARD ?= "icinga2"
-ICINGA2_GEM_TYPE ?= "stable"
+BUILD_DATE          := $(shell date +%Y-%m-%d)
+BUILD_VERSION       := $(shell date +%y%m)
+DASHBOARD           ?= "icinga2"
+ICINGA2_GEM_TYPE    ?= "stable"
 ICINGA2_GEM_VERSION ?= "1.0.0"
 
 .PHONY: build push shell run start stop rm release
