@@ -19,3 +19,8 @@ class Dashing.Simplemon extends Dashing.Widget
       diff = now.getTime() - timestamp.getTime()
       if diff > 30000
         @onData({color:'grey'})
+
+  redirect: ->
+    link = $(@node).data("url")
+    #console.log("found url: " + link )
+    window.open(link, '_blank');

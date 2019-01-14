@@ -1,92 +1,47 @@
-
-include env_make
-
-NS       = bodsch
-VERSION ?= latest
-
-REPO     = docker-dashing-icinga2
-NAME     = dashing-icinga2
-INSTANCE = default
-
-BUILD_DATE          := $(shell date +%Y-%m-%d)
-BUILD_VERSION       := $(shell date +%y%m)
-DASHBOARD           ?= "icinga2"
-ICINGA2_GEM_TYPE    ?= "stable"
-ICINGA2_GEM_VERSION ?= "1.0.0"
-
-.PHONY: build push shell run start stop rm release
+export GIT_SHA1            := $(shell git rev-parse --short HEAD)
+export DOCKER_IMAGE_NAME   := dashing-icinga2
+export DOCKER_NAME_SPACE   := ${USER}
+export DOCKER_VERSION      ?= latest
+export BUILD_DATE          := $(shell date +%Y-%m-%d)
+export BUILD_VERSION       := $(shell date +%y%m)
+export BUILD_TYPE          ?= stable
+export DASHBOARD           ?= icinga2
+export ICINGA2_GEM_TYPE    ?= stable
+export ICINGA2_GEM_VERSION ?= 1.0.0
 
 
-build:
-	docker build \
-		--force-rm \
-		--compress \
-		--build-arg BUILD_DATE=$(BUILD_DATE) \
-		--build-arg BUILD_VERSION=$(BUILD_VERSION) \
-		--build-arg DASHBOARD=$(DASHBOARD) \
-		--build-arg ICINGA2_GEM_TYPE=$(ICINGA2_GEM_TYPE) \
-		--build-arg ICINGA2_GEM_VERSION=$(ICINGA2_GEM_VERSION) \
-		--tag $(NS)/$(REPO):$(BUILD_VERSION) .
-
-clean:
-	docker rmi \
-		--force \
-		$(NS)/$(REPO):$(BUILD_VERSION)
-
-history:
-	docker history \
-		$(NS)/$(REPO):$(BUILD_VERSION)
-
-push:
-	docker push \
-		$(NS)/$(REPO):$(BUILD_VERSION)
-
-shell:
-	docker run \
-		--rm \
-		--name $(NAME)-$(INSTANCE) \
-		--interactive \
-		--tty \
-		$(PORTS) \
-		$(VOLUMES) \
-		$(ENV) \
-		$(NS)/$(REPO):$(BUILD_VERSION) \
-		/bin/sh
-
-run:
-	docker run \
-		--rm \
-		--name $(NAME)-$(INSTANCE) \
-		$(PORTS) \
-		$(VOLUMES) \
-		$(ENV) \
-		$(NS)/$(REPO):$(BUILD_VERSION)
-
-exec:
-	docker exec \
-		--interactive \
-		--tty \
-		$(NAME)-$(INSTANCE) \
-		/bin/sh
-
-start:
-	docker run \
-		--detach \
-		--name $(NAME)-$(INSTANCE) \
-		$(PORTS) \
-		$(VOLUMES) \
-		$(ENV) \
-		$(NS)/$(REPO):$(BUILD_VERSION)
-
-stop:
-	docker stop \
-		$(NAME)-$(INSTANCE)
-
-rm:
-	docker rm \
-		$(NAME)-$(INSTANCE)
-
-release: build
-	make push -e VERSION=$(BUILD_VERSION)
+.PHONY: build shell run exec start stop clean compose-file
 
 default: build
+
+build:
+	@hooks/build
+
+shell:
+	@hooks/shell
+
+run:
+	@hooks/run
+
+exec:
+	@hooks/exec
+
+start:
+	@hooks/start
+
+stop:
+	@hooks/stop
+
+clean:
+	@hooks/clean
+
+compose-file:
+	@hooks/compose-file
+
+linter:
+	@tests/linter.sh
+
+integration_test:
+	@tests/integration_test.sh
+
+test: linter integration_test

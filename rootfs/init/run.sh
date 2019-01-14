@@ -1,5 +1,8 @@
 #!/bin/sh
 
+HOSTNAME=$(hostname -s)
+export HOSTNAME
+
 AUTH_TOKEN=${AUTH_TOKEN:-$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)}
 
 export WORK_DIR=/srv
@@ -18,9 +21,9 @@ log_info "==================================================================="
 
 log_info "start init process ..."
 
-cd /opt/${DASHBOARD}
+cd "/opt/${DASHBOARD}"
 
 /usr/bin/puma \
-  --config /opt/${DASHBOARD}/config/puma.rb > /dev/null
+  --config "/opt/${DASHBOARD}/config/puma.rb" > /dev/null
 
 # EOF

@@ -31,16 +31,16 @@ $(function() {
     <!-- Down, Critical, Warning, Unknown -->
 
     <li data-row="2" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="icinga-host-problems-down" data-view="Simplemon" data-title="Unhandled Hosts"></div>
+      <div data-id="icinga-host-problems-down" data-view="Simplemon" data-title="Unhandled Hosts"<% if ENV['ICINGAWEB_URL'] %> data-event-click="redirect" data-url="%ICINGAWEB_URL%/monitoring/list/hosts?host_problem=1&amp;sort=host_severity&amp;dir=desc"<% end %>></div>
     </li>
     <li data-row="2" data-col="2" data-sizex="1" data-sizey="1">
-      <div data-id="icinga-service-problems-critical" data-view="Simplemon" data-title="Unhandled Services"></div>
+      <div data-id="icinga-service-problems-critical" data-view="Simplemon" data-title="Unhandled Services"<% if ENV['ICINGAWEB_URL'] %>  data-event-click="redirect" data-url="%ICINGAWEB_URL%/monitoring/list/services?service_problem=1&amp;sort=service_severity&amp;dir=desc"<% end %>></div>
     </li>
     <li data-row="2" data-col="3" data-sizex="1" data-sizey="1">
-      <div data-id="icinga-service-problems-warning" data-view="Simplemon" data-title="Unhandled Services"></div>
+      <div data-id="icinga-service-problems-warning" data-view="Simplemon" data-title="Unhandled Services"<% if ENV['ICINGAWEB_URL'] %>  data-event-click="redirect" data-url="%ICINGAWEB_URL%/monitoring/list/services?service_problem=1&amp;sort=service_severity&amp;dir=desc"<% end %>></div>
     </li>
     <li data-row="2" data-col="4" data-sizex="1" data-sizey="1">
-      <div data-id="icinga-service-problems-unknown" data-view="Simplemon" data-title="Unhandled Services"></div>
+      <div data-id="icinga-service-problems-unknown" data-view="Simplemon" data-title="Unhandled Services"<% if ENV['ICINGAWEB_URL'] %>  data-event-click="redirect" data-url="%ICINGAWEB_URL%/monitoring/list/services?service_problem=1&amp;sort=service_severity&amp;dir=desc"<% end %>></div>
     </li>
 
     <li data-row="3" data-col="1" data-sizex="1" data-sizey="1">

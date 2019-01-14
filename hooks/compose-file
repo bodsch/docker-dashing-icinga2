@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Custom build for Docker Hub
+# see: https://medium.com/microscaling-systems/labelling-automated-builds-on-docker-hub-f3d073fb8e1
+
+[[ -e hooks/environment ]] && . hooks/environment
+
+cat << EOF > .env
+BUILD_DATE=${BUILD_DATE}
+BUILD_VERSION=${BUILD_VERSION}
+
+DASHBOARD=${DASHBOARD}
+ICINGA2_GEM_TYPE=${ICINGA2_GEM_TYPE}
+ICINGA2_GEM_VERSION=${ICINGA2_GEM_VERSION}
+
+DATABASE_ROOT_PASSWORD=vYUQ14SGVrJRi69PsujC
+IDO_PASSWORD=ido.pass
+
+ICINGA_HOST=icinga2-master
+ICINGA_API_PORT=5665
+ICINGA_API_USER="root"
+ICINGA_API_PASSWORD="icinga"
+ICINGAWEB_URL="http://localhost/icinga"
+
+ICINGA_CERT_SERVICE_BA_USER=admin
+ICINGA_CERT_SERVICE_BA_PASSWORD=admin
+ICINGA_CERT_SERVICE_API_USER=root
+ICINGA_CERT_SERVICE_API_PASSWORD=icinga
+ICINGA_CERT_SERVICE_SERVER=icinga2-master
+ICINGA_CERT_SERVICE_PORT=8080
+ICINGA_CERT_SERVICE_PATH=/
+
+EOF
+
+docker-compose \
+  --file docker-compose_example.yml \
+  config > docker-compose.yml

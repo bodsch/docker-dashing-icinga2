@@ -3,47 +3,66 @@ version: '3.3'
 
 services:
 
+  database:
+    image: bodsch/docker-mariadb
+    container_name: database
+    hostname: database
+    environment:
+      MARIADB_SYSTEM_USER: root
+      MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+
   # the Icinga2 Master
   # includes a certificate service to create and provide a icinga certificate
+  #
   icinga2-master:
-    image: bodsch/docker-icinga2:latest
+    image: bodsch/docker-icinga2:2.10.1-master
     container_name: icinga2-master
-    hostname: icinga2-master.matrix.lan
+    hostname: icinga2-master
     restart: always
     ports:
       - 5665:5665
-      - 8080
+      - 8080:8080
     environment:
-      - ICINGA_API_USERS=root:icinga,dashing:dashing,cert:foo-bar
-      - ICINGA_HOST=icinga2-master.matrix.lan
-      - ICINGA_MASTER=icinga2-master.matrix.lan
+      - ICINGA2_MASTER=${ICINGA_HOST}
+      - ICINGA2_API_USERS=root:icinga,dashing:dashing,cert:foo-bar
+      - MYSQL_HOST=database
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASS=${DATABASE_ROOT_PASSWORD}
+      - IDO_DATABASE_NAME=icinga2core
+      - IDO_PASSWORD
+      - DEMO_DATA=true
       - BASIC_AUTH_USER=foofoo
       - BASIC_AUTH_PASS=barbar
-      - ICINGA_CERT_SERVICE_BA_USER=admin
-      - ICINGA_CERT_SERVICE_BA_PASSWORD=admin
-      - ICINGA_CERT_SERVICE_API_USER=root
-      - ICINGA_CERT_SERVICE_API_PASSWORD=icinga
-      - ICINGA_CERT_SERVICE_SERVER=icinga2-master
-      - ICINGA_CERT_SERVICE_PORT=8080
-      - ICINGA_CERT_SERVICE_PATH=/
-      - CARBON_HOST=
-      - CARBON_PORT=2003
-      - DEMO_DATA=true
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - ICINGA_CERT_SERVICE_BA_USER
+      - ICINGA_CERT_SERVICE_BA_PASSWORD
+      - ICINGA_CERT_SERVICE_API_USER
+      - ICINGA_CERT_SERVICE_API_PASSWORD
+      - ICINGA_CERT_SERVICE_SERVER
+      - ICINGA_CERT_SERVICE_PORT
+      - ICINGA_CERT_SERVICE_PATH
+    links:
+      - database:database
 
   # the first icinga2 satellite
   # ask the master above for an certificate
   dashing-icinga2:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=${BUILD_DATE}
+        - BUILD_VERSION=${BUILD_VERSION}
+        - DASHBOARD=${DASHBOARD}
+        - ICINGA2_GEM_TYPE=${ICINGA2_GEM_TYPE}
+        - ICINGA2_GEM_VERSION=${ICINGA2_GEM_VERSION}
     container_name: dashing-icinga2
-    hostname: dashing-icinga2.matrix.lan
+    hostname: dashing-icinga2
     restart: always
     ports:
       - 3030:3030
     environment:
       DEBUG: 'true'
-      ICINGA_MASTER: icinga2-master.matrix.lan
+      ICINGA_MASTER: ${ICINGA_HOST}
       ICINGA_API_USER: root
       ICINGA_API_PASSWORD: icinga
       ICINGAWEB_URL: http://localhost/icinga
@@ -51,10 +70,8 @@ services:
       ICINGA_CERT_SERVICE_BA_PASSWORD: barbar
       ICINGA_CERT_SERVICE_API_USER: dashing
       ICINGA_CERT_SERVICE_API_PASSWORD: dashing
-      ICINGA_CERT_SERVICE_SERVER: icinga2-master.matrix.lan
+      ICINGA_CERT_SERVICE_SERVER: ${ICINGA_HOST}
       ICINGA_CERT_SERVICE_PORT: 8080
       ICINGA_CERT_SERVICE_PATH: /
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
     links:
-      - icinga2-master:icinga2-master.matrix.lan
+      - icinga2-master:icinga2-master
