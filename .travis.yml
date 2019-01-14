@@ -18,10 +18,10 @@ jobs:
 
     - stage: build and test
       script:
-        - make
-        - make start
+        - make compose-file
+        - docker-compose up --build -d
         - make test
-        - make stop
+        - docker-compose down
 
     - stage: build and push docker image
       script:
