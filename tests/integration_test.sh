@@ -45,8 +45,8 @@ inspect() {
   done
 }
 
-echo "wait 10 seconds for start"
-sleep 10s
+echo "wait 30 seconds for start"
+sleep 30s
 
 if [[ $(docker ps | tail -n +2 | wc -l) -eq 3 ]]
 then
