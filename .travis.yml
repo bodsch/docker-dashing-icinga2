@@ -1,36 +1,29 @@
 sudo: required
-
 group: edge
-
 services:
-  - docker
-
+- docker
 env:
   global:
-    - BUILD_DATE=$(date +"%Y-%m-%d")
-    - BUILD_VERSION=$(date +"%y%m")
-
+  - BUILD_DATE=$(date +"%Y-%m-%d")
+  - BUILD_VERSION=$(date +"%y%m")
+  - secure: cZljmg2yRlytbNlUDbBVjyuzZKqg4NP6vqSviF4CmR8h0Redqptj+a47LN4LXh/QIk9Z825zIQ9KSxEgPjckcGyeXeQu6NlwMTnpdxNZZPO4DxGJz5AbdV0LMX1VMWD22qKt3PZBxep8tuMqnQ7mDB7orYsLjyIBSBYmIJdodSiZN5z3swHkodmh1lTbsdj1PbdQUAjyhq39gAkZlNdOjBH8+8KWlAbDwvYYj0tCzQjF49FMh3OfMxiTGADmda5KR/5C0LDYZyk4YsTDid1/q7a96pTOIKPQPYqvYylLxiqZZ0i4YJ+eQ7wPuIvAmk/LZZ6X0rAB9sVQx81Eo2qttxPzGidj3ATaZDD+aZZpwS2mKkfi6stQ9C7b5WmNoUOLM3sky/JEFx9aULetBUzdbfBuGmzEvyAoORn4twEcV8PpjbLdw8Iokc8Ms6uY1kDxDB/TFrZmnJH7MhIG9JEKp3FOpTPHsdo3NLuA7dBeMkCJBbhzxX8gJpsoH8/pnyPWD6/yp41SJXOYGoQoGovQCUkPVBahhQzyNvcqDqtjdTeU4ZEJ1SmGZON2dsBzCmFYEiWSFfT03Wdly7aW6pHuyaPTh+LW3toXz/X0quN8z+/TfQdbWYOhTuECTKJOjs4fVsbA9Wg2EYRLdIe5duv6AZNL3ntBdYEZFFftqjt+WqM=
 jobs:
   include:
-    - stage: build
-      script:
-        - make
-
-    - stage: build and test
-      script:
-        - make compose-file
-        - docker-compose up --build -d
-        - make test
-        - docker-compose down
-
-    - stage: build and push docker image
-      script:
-        - make
-        - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
-        #
-        - docker tag  ${USER}/dashing-icinga2:latest ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
-        - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
-        #
-        - docker tag  ${DOCKER_USERNAME}/docker-dashing-icinga2:latest ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
-        - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
-        - docker logout
+  - stage: build
+    script:
+    - make
+  - stage: build and test
+    script:
+    - make compose-file
+    - docker-compose up --build -d
+    - make test
+    - docker-compose down
+  - stage: build and push docker image
+    script:
+    - make
+    - docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+    - docker tag  ${USER}/dashing-icinga2:latest ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
+    - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:latest
+    - docker tag  ${DOCKER_USERNAME}/docker-dashing-icinga2:latest ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
+    - docker push ${DOCKER_USERNAME}/docker-dashing-icinga2:${BUILD_VERSION}
+    - docker logout
