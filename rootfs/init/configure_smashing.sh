@@ -26,7 +26,7 @@ then
     "${icinga_dashboard}"
 fi
 
-if [ ! -z "${PROXY_PATH}" ]
+if [ -n "${PROXY_PATH}" ]
 then
 
   sed -i \

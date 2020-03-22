@@ -1,5 +1,5 @@
 
-FROM bodsch/docker-dashing:1901
+FROM bodsch/docker-dashing:2003
 
 EXPOSE 3030
 
@@ -18,7 +18,7 @@ ENV \
 
 WORKDIR /opt
 
-# hadolint ignore=SC2045,DL3003,DL3018,DL3019
+# hadolint ignore=SC2039,SC2045,DL3003,DL3018,DL3019
 RUN \
   apk update --quiet && \
   apk add    --quiet --virtual .build-deps \
@@ -36,11 +36,11 @@ RUN \
   rm -rf /usr/lib/ruby/gems/current/gems/smashing/templates/project/dashboards/*.erb && \
   smashing new "${DASHBOARD}" && \
   cd "${DASHBOARD}" && \
-  echo "source 'https://rubygems.org'" > Gemfile && \
-  echo "gem 'icinga2', '~> ${ICINGA2_GEM_VERSION}'" >> Gemfile && \
+  echo -e "\\n \
+gem 'icinga2', '~> ${ICINGA2_GEM_VERSION}'\\n" >> Gemfile && \
   mkdir -p "/opt/${DASHBOARD}/jobs" && \
   mkdir -p "/opt/${DASHBOARD}/dashboards" && \
-  #sed -i "/gem 'twitter'/d" Gemfile && \
+  sed -i "/gem 'twitter'/d" Gemfile && \
   #bundle config local.icinga2 /build && \
   #if [ "${ICINGA2_GEM_TYPE}" == "local" ] ; then \
   #  for g in $(ls -1 /build/*.gem 2> /dev/null) ; do \

@@ -233,7 +233,7 @@ extract_vars() {
 
   # detect if 'ICINGA_CERT_SERVICE' an json
   #
-  if ( [ ! -z "${ICINGA_CERT_SERVICE}" ] && [ "${ICINGA_CERT_SERVICE}" != "true" ] && [ "${ICINGA_CERT_SERVICE}" != "false" ] )
+  if ( [ -n "${ICINGA_CERT_SERVICE}" ] && [ "${ICINGA_CERT_SERVICE}" != "true" ] && [ "${ICINGA_CERT_SERVICE}" != "false" ] )
   then
     echo "${ICINGA_CERT_SERVICE}" | json_verify -q 2> /dev/null
 
@@ -321,11 +321,11 @@ validate_certservice_environment() {
   # use the new Cert Service to create and get a valide certificat for distributed icinga services
   #
   if (
-    [ ! -z ${ICINGA_CERT_SERVICE_SERVER} ] &&
-    [ ! -z ${ICINGA_CERT_SERVICE_BA_USER} ] &&
-    [ ! -z ${ICINGA_CERT_SERVICE_BA_PASSWORD} ] &&
-    [ ! -z ${ICINGA_CERT_SERVICE_API_USER} ] &&
-    [ ! -z ${ICINGA_CERT_SERVICE_API_PASSWORD} ]
+    [ -n "${ICINGA_CERT_SERVICE_SERVER}" ] &&
+    [ -n "${ICINGA_CERT_SERVICE_BA_USER}" ] &&
+    [ -n "${ICINGA_CERT_SERVICE_BA_PASSWORD}" ] &&
+    [ -n "${ICINGA_CERT_SERVICE_API_USER}" ] &&
+    [ -n "${ICINGA_CERT_SERVICE_API_PASSWORD}" ]
   )
   then
     USE_CERT_SERVICE=true
